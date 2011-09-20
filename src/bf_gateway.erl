@@ -54,9 +54,11 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
+    GS_Wsdl =  detergent:initModel(betfairgateway_util:get_GS_Wsdl()), 
     Username = betfairgateway_util:get_username(),
     Password = betfairgateway_util:get_password(),
-    Token = bf_api:login(Username, Password),
+    Token = bf_api:login(GS_Wsdl, Username, Password),
+    io:format("login ~p~n", [Token]),
     {ok, #state{token = Token}}.
 
 %%--------------------------------------------------------------------

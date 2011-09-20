@@ -28,3 +28,7 @@ get_password() ->
 	{ok, Value} -> Value;
 	undefined -> throw({error, password_not_defined})
     end.
+
+
+get_GS_Wsdl() ->
+    "file://" ++ code:priv_dir(betfairgateway) ++ "/BFGlobalService.wsdl".
