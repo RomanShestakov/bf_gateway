@@ -5,7 +5,9 @@
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+		  ssl,
+		  inets
                  ]},
   {mod, { betfairgateway_app, []}},
   {env, [{username, "rshestakov"},

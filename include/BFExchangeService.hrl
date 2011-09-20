@@ -5,10 +5,10 @@
 %% It is possible to add default values, but be aware that these will
 %% only be used when *writing* an xml document.
 
--record('P:APIRequest', {anyAttribs, 'header'}).
--record('P:APIRequestHeader', {anyAttribs, 'clientStamp', 'sessionToken'}).
--record('P:APIResponse', {anyAttribs, 'header'}).
--record('P:APIResponseHeader', {anyAttribs, 'errorCode', 'minorErrorCode', 'sessionToken', 'timestamp'}).
+%% -record('P:APIRequest', {anyAttribs, 'header'}).
+%% -record('P:APIRequestHeader', {anyAttribs, 'clientStamp', 'sessionToken'}).
+%% -record('P:APIResponse', {anyAttribs, 'header'}).
+%% -record('P:APIResponseHeader', {anyAttribs, 'errorCode', 'minorErrorCode', 'sessionToken', 'timestamp'}).
 -record('P:AccountStatementItem', {anyAttribs, 'accountBalance', 'amount', 'avgPrice', 'betId', 'betSize', 'betType', 'betCategoryType', 'commissionRate', 'eventId', 'eventTypeId', 'fullMarketName', 'grossBetAmount', 'marketName', 'marketType', 'placedDate', 'selectionId', 'selectionName', 'settledDate', 'startDate', 'transactionType', 'transactionId', 'winLose'}).
 -record('P:ArrayOfAccountStatementItem', {anyAttribs, 'AccountStatementItem'}).
 -record('P:ArrayOfAvailabilityInfo', {anyAttribs, 'AvailabilityInfo'}).
@@ -19,7 +19,7 @@
 -record('P:ArrayOfCancelBetsByMarketResult', {anyAttribs, 'CancelBetsByMarketResult'}).
 -record('P:ArrayOfCancelBetsResult', {anyAttribs, 'CancelBetsResult'}).
 -record('P:ArrayOfCountryCode', {anyAttribs, 'Country'}).
--record('P:ArrayOfCouponLinks', {anyAttribs, 'CouponLink'}).
+%% -record('P:ArrayOfCouponLinks', {anyAttribs, 'CouponLink'}).
 -record('P:ArrayOfCouponMarket', {anyAttribs, 'CouponMarket'}).
 -record('P:ArrayOfCouponSelection', {anyAttribs, 'CouponSelection'}).
 -record('P:ArrayOfEventId', {anyAttribs, 'EventId'}).
@@ -54,7 +54,7 @@
 -record('P:CancelBetsReq', {anyAttribs, 'header', 'bets'}).
 -record('P:CancelBetsResp', {anyAttribs, 'header', 'betResults', 'errorCode', 'minorErrorCode'}).
 -record('P:CancelBetsResult', {anyAttribs, 'betId', 'resultCode', 'sizeCancelled', 'sizeMatched', 'success'}).
--record('P:CouponLink', {anyAttribs, 'couponId', 'couponName'}).
+%% -record('P:CouponLink', {anyAttribs, 'couponId', 'couponName'}).
 -record('P:CouponMarket', {anyAttribs, 'marketId', 'marketName', 'exchangeId', 'parentEventName', 'marketStatus', 'marketType', 'marketTypeVariant', 'marketInfo', 'startTime', 'betDelay', 'couponSelectionItems'}).
 -record('P:CouponSelection', {anyAttribs, 'runner', 'backOdds', 'layOdds'}).
 -record('P:GetAccountFundsReq', {anyAttribs, 'header'}).
@@ -129,17 +129,17 @@
 -record('P:ProfitAndLoss', {anyAttribs, 'futureIfWin', 'ifWin', 'selectionId', 'selectionName', 'worstcaseIfWin'}).
 -record('P:RacingSilk', {anyAttribs, 'selectionId', 'silksURL', 'silksText', 'trainerName', 'ageWeight', 'form', 'daysSince', 'jockeyClaim', 'wearing', 'saddleCloth', 'stallDraw'}).
 -record('P:RacingSilkV2', {anyAttribs, 'selectionId', 'silksURL', 'silksText', 'trainerName', 'ageWeight', 'form', 'daysSince', 'jockeyClaim', 'wearing', 'saddleCloth', 'stallDraw', 'ownerName', 'jockeyName', 'colour', 'sex', 'bred', 'forecastPriceNumerator', 'forecastPriceDenominator', 'officialRating', 'sire', 'dam', 'damSire'}).
--record('P:Runner', {anyAttribs, 'asianLineId', 'handicap', 'name', 'selectionId'}).
+%% -record('P:Runner', {anyAttribs, 'asianLineId', 'handicap', 'name', 'selectionId'}).
 -record('P:RunnerPrices', {anyAttribs, 'asianLineId', 'bestPricesToBack', 'bestPricesToLay', 'handicap', 'lastPriceMatched', 'reductionFactor', 'selectionId', 'sortOrder', 'totalAmountMatched', 'vacant', 'farBSP', 'nearBSP', 'actualBSP'}).
 -record('P:UpdateBets', {anyAttribs, 'betId', 'newPrice', 'newSize', 'oldPrice', 'oldSize', 'oldBetPersistenceType', 'newBetPersistenceType'}).
 -record('P:UpdateBetsReq', {anyAttribs, 'header', 'bets'}).
 -record('P:UpdateBetsResp', {anyAttribs, 'header', 'betResults', 'errorCode', 'minorErrorCode'}).
 -record('P:UpdateBetsResult', {anyAttribs, 'betId', 'newBetId', 'sizeCancelled', 'newSize', 'newPrice', 'resultCode', 'success'}).
 -record('P:VolumeInfo', {anyAttribs, 'odds', 'totalMatchedAmount', 'totalBspBackMatchedAmount', 'totalBspLiabilityMatchedAmount'}).
--record('p:APIRequest', {anyAttribs, 'header'}).
--record('p:APIRequestHeader', {anyAttribs, 'clientStamp', 'sessionToken'}).
--record('p:APIResponse', {anyAttribs, 'header'}).
--record('p:APIResponseHeader', {anyAttribs, 'errorCode', 'minorErrorCode', 'sessionToken', 'timestamp'}).
+%% -record('p:APIRequest', {anyAttribs, 'header'}).
+%% -record('p:APIRequestHeader', {anyAttribs, 'clientStamp', 'sessionToken'}).
+%% -record('p:APIResponse', {anyAttribs, 'header'}).
+%% -record('p:APIResponseHeader', {anyAttribs, 'errorCode', 'minorErrorCode', 'sessionToken', 'timestamp'}).
 -record('p:AccountStatementItem', {anyAttribs, 'accountBalance', 'amount', 'avgPrice', 'betId', 'betSize', 'betType', 'betCategoryType', 'commissionRate', 'eventId', 'eventTypeId', 'fullMarketName', 'grossBetAmount', 'marketName', 'marketType', 'placedDate', 'selectionId', 'selectionName', 'settledDate', 'startDate', 'transactionType', 'transactionId', 'winLose'}).
 -record('p:ArrayOfAccountStatementItem', {anyAttribs, 'AccountStatementItem'}).
 -record('p:ArrayOfAvailabilityInfo', {anyAttribs, 'AvailabilityInfo'}).
@@ -150,7 +150,7 @@
 -record('p:ArrayOfCancelBetsByMarketResult', {anyAttribs, 'CancelBetsByMarketResult'}).
 -record('p:ArrayOfCancelBetsResult', {anyAttribs, 'CancelBetsResult'}).
 -record('p:ArrayOfCountryCode', {anyAttribs, 'Country'}).
--record('p:ArrayOfCouponLinks', {anyAttribs, 'CouponLink'}).
+%% -record('p:ArrayOfCouponLinks', {anyAttribs, 'CouponLink'}).
 -record('p:ArrayOfCouponMarket', {anyAttribs, 'CouponMarket'}).
 -record('p:ArrayOfCouponSelection', {anyAttribs, 'CouponSelection'}).
 -record('p:ArrayOfEventId', {anyAttribs, 'EventId'}).
@@ -185,7 +185,7 @@
 -record('p:CancelBetsReq', {anyAttribs, 'header', 'bets'}).
 -record('p:CancelBetsResp', {anyAttribs, 'header', 'betResults', 'errorCode', 'minorErrorCode'}).
 -record('p:CancelBetsResult', {anyAttribs, 'betId', 'resultCode', 'sizeCancelled', 'sizeMatched', 'success'}).
--record('p:CouponLink', {anyAttribs, 'couponId', 'couponName'}).
+%% -record('p:CouponLink', {anyAttribs, 'couponId', 'couponName'}).
 -record('p:CouponMarket', {anyAttribs, 'marketId', 'marketName', 'exchangeId', 'parentEventName', 'marketStatus', 'marketType', 'marketTypeVariant', 'marketInfo', 'startTime', 'betDelay', 'couponSelectionItems'}).
 -record('p:CouponSelection', {anyAttribs, 'runner', 'backOdds', 'layOdds'}).
 -record('p:GetAccountFundsReq', {anyAttribs, 'header'}).
@@ -260,7 +260,7 @@
 -record('p:ProfitAndLoss', {anyAttribs, 'futureIfWin', 'ifWin', 'selectionId', 'selectionName', 'worstcaseIfWin'}).
 -record('p:RacingSilk', {anyAttribs, 'selectionId', 'silksURL', 'silksText', 'trainerName', 'ageWeight', 'form', 'daysSince', 'jockeyClaim', 'wearing', 'saddleCloth', 'stallDraw'}).
 -record('p:RacingSilkV2', {anyAttribs, 'selectionId', 'silksURL', 'silksText', 'trainerName', 'ageWeight', 'form', 'daysSince', 'jockeyClaim', 'wearing', 'saddleCloth', 'stallDraw', 'ownerName', 'jockeyName', 'colour', 'sex', 'bred', 'forecastPriceNumerator', 'forecastPriceDenominator', 'officialRating', 'sire', 'dam', 'damSire'}).
--record('p:Runner', {anyAttribs, 'asianLineId', 'handicap', 'name', 'selectionId'}).
+%% -record('p:Runner', {anyAttribs, 'asianLineId', 'handicap', 'name', 'selectionId'}).
 -record('p:RunnerPrices', {anyAttribs, 'asianLineId', 'bestPricesToBack', 'bestPricesToLay', 'handicap', 'lastPriceMatched', 'reductionFactor', 'selectionId', 'sortOrder', 'totalAmountMatched', 'vacant', 'farBSP', 'nearBSP', 'actualBSP'}).
 -record('p:UpdateBets', {anyAttribs, 'betId', 'newPrice', 'newSize', 'oldPrice', 'oldSize', 'oldBetPersistenceType', 'newBetPersistenceType'}).
 -record('p:UpdateBetsReq', {anyAttribs, 'header', 'bets'}).
@@ -327,8 +327,8 @@
 -record('p:placeBetsResponse', {anyAttribs, 'Result'}).
 -record('p:updateBets', {anyAttribs, 'request'}).
 -record('p:updateBetsResponse', {anyAttribs, 'Result'}).
--record('soap:Body', {anyAttribs, choice}).
--record('soap:Envelope', {anyAttribs, 'Header', 'Body', choice}).
--record('soap:Fault', {anyAttribs, 'faultcode', 'faultstring', 'faultactor', 'detail'}).
--record('soap:Header', {anyAttribs, choice}).
--record('soap:detail', {anyAttribs, choice}).
+%% -record('soap:Body', {anyAttribs, choice}).
+%% -record('soap:Envelope', {anyAttribs, 'Header', 'Body', choice}).
+%% -record('soap:Fault', {anyAttribs, 'faultcode', 'faultstring', 'faultactor', 'detail'}).
+%% -record('soap:Header', {anyAttribs, choice}).
+%% -record('soap:detail', {anyAttribs, choice}).

@@ -35,10 +35,11 @@ namespace
 Wsdl = detergent:initModel("file://../priv/BFGlobalService.wsdl").
 Wsdl2 = detergent:initModel("file://../priv/BFExchangeService.wsdl").
 4. generate hrl records
-detergent:write_hrl(Wsdl, "BFGlobalService.hrl").
-detergent:write_hrl(Wsdl2, "BFExchangeService.hrl").
+#detergent:write_hrl(Wsdl, "BFGlobalService.hrl").
+#detergent:write_hrl(Wsdl2, "BFExchangeService.hrl").
 
-
+detergent:write_hrl("file://./priv/BFGlobalService.wsdl", "BFGlobalService.hrl", "BFG").
+detergent:write_hrl("file://./priv/BFExchangeService.wsdl", "BFExchangeService.hrl", "BFE").
 
 ## Testing
 
