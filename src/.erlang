@@ -1,0 +1,13 @@
+io:format("starting Erlang shell, executing .erlang ~n").
+Dir = filename:absname(".").
+io:format("current dir: ~p ~n", [Dir]).
+code:add_patha(".").
+code:add_patha("./ebin").
+code:add_patha("/Users/romanshestakov/Development/betfairgateway/ebin").
+code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/log4erl/ebin").
+code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/detergent/ebin").
+code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/erlsom/ebin").
+code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/mochiweb/ebin").
+
+c:cd("..").
+io:format("changed dir to: ~p ~n", [filename:absname(".")]).
