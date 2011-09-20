@@ -22,7 +22,7 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {}).
+-record(state, {token}).
 
 %%%===================================================================
 %%% API
@@ -54,7 +54,10 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    {ok, #state{}}.
+    Username = betfairgateway_util:get_username(),
+    Password = betfairgateway_util:get_password(),
+    Token = bf_api:login(Username, Password),
+    {ok, #state{token = Token}}.
 
 %%--------------------------------------------------------------------
 %% @private

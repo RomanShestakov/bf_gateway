@@ -9,8 +9,8 @@
 %% Supervisor callbacks
 -export([init/1]).
 
-%% Helper macro for declaring children of supervisor
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+%% %% Helper macro for declaring children of supervisor
+%% -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
@@ -24,6 +24,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    BFGW = {'bf_gateway',{'bf_gateway',start_link,[]},permanent,2000,worker,['bf_gateway']},
-    {ok, { {one_for_one, 5, 10}, [BFGW]} }.
+    Bfgw = {'bf_gateway',{'bf_gateway',start_link,[]},permanent,2000,worker,['bf_gateway']},
+    {ok, { {one_for_one, 5, 10}, [Bfgw]} }.
 
