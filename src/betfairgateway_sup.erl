@@ -24,5 +24,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, []} }.
+    BFGW = {'bf_gateway',{'bf_gateway',start_link,[]},permanent,2000,worker,['bf_gateway']},
+    {ok, { {one_for_one, 5, 10}, [BFGW]} }.
 

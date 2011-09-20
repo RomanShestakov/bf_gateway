@@ -10,9 +10,9 @@
   {mod, { betfairgateway_app, []}},
   {env, [{username, "rshestakov"},
 	 {password, "SHESTAK0V"},
-	 {locationId=0},
-	 {productId=82},
-	 {vendorSoftwareId=0},
+	 {locationId, 0},
+	 {productId, 82},
+	 {vendorSoftwareId, 0},
 	 {log4erl_config, "etc/log4erl.conf"}
   ]}
  ]}.
