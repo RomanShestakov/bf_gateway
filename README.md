@@ -25,6 +25,21 @@ And make:
 
 Rebar will first pull in dependencies from GitHub, attempt to build them all, then build betfairgateway.
 
+
+## how to generate records from hrl file
+
+1. save BFExchangeService.wsdl and BFGlobalService.wsdl from betfair website to priv
+2. comment out  <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/"/> from wsdl files, as erlsom can't parse this 
+namespace
+3. init models:
+Wsdl = detergent:initModel("file://../priv/BFGlobalService.wsdl").
+Wsdl2 = detergent:initModel("file://../priv/BFExchangeService.wsdl").
+4. generate hrl records
+detergent:write_hrl(Wsdl, "BFGlobalService.hrl").
+detergent:write_hrl(Wsdl2, "BFExchangeService.hrl").
+
+
+
 ## Testing
 
 License
