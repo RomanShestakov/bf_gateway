@@ -10,6 +10,9 @@
 
 -behaviour(gen_server).
 
+-include("../include/BFExchangeService.hrl").
+-include("../include/BFGlobalService.hrl").
+
 %% API
 -export([start_link/0]).
 
