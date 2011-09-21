@@ -20,21 +20,19 @@ login(GS_Wsdl, Username, Password) ->
       productId=82,
       vendorSoftwareId = 0},
     
-    io:format("sending login req ~p ~n", [LoginReq]),
+    log4erl:debug("sending login req ~p", [LoginReq]),
+    
+    %% get reponse from betfair API and extract Token
+    {ok, _, [#'p:loginResponse'{ 'Result' =
+				     #'P:LoginResp'{header = #'P:APIResponseHeader'{'sessionToken' = Token},
+						    currency = _Currency,
+						    errorCode = ErrCode,
+						    minorErrorCode = MErrCode}}]}
+	= LoginResp = detergent:call(GS_Wsdl, "login", [LoginReq]),
 
-    %%#'P:LoginResp'{'header'=Header, 'currency', 'errorCode' = ErrCode, 'minorErrorCode'= MErrCode, 'validUntil'} = 
-    {ok, _, [#'p:loginResponse'{ 'Result' =  LoginRes1 }]} = detergent:call(GS_Wsdl, "login", [LoginReq]),
+    log4erl:debug("got login resp ~p", [LoginResp]),
 
-    #'P:LoginResp'{header = Header, errorCode = ErrCode, minorErrorCode = MErrCode} = LoginRes1,
-
-    io:format("login resp ~p ~n", [Header]),
-
-    %% #'P:LoginResp'{header = Header, errorCode = ErrCode, minorErrorCode = MErrCode} = 
-%% 	detergent:call(GS_Wsdl, "login", [LoginReq]),
-    Header.
-%%     case errorCode == ?LOGIN_ERROR_OK of
-%% 	true ->
-%% 	    Header;
-%% 	false ->
-%% 	    throw({login_error, ErrCode, MErrCode})
-%%     end.
+    case ErrCode == ?LOGIN_ERROR_OK of
+	true -> Token;
+	false -> throw({login_error, ErrCode, MErrCode})
+    end.

@@ -58,7 +58,7 @@ init([]) ->
     Username = betfairgateway_util:get_username(),
     Password = betfairgateway_util:get_password(),
     Token = bf_api:login(GS_Wsdl, Username, Password),
-    io:format("login ~p~n", [Token]),
+    log4erl:info("succesfully logged to betfair"), 
     {ok, #state{token = Token}}.
 
 %%--------------------------------------------------------------------
