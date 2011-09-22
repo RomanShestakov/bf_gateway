@@ -19,3 +19,6 @@
 %%           <xsd:enumeration value="LOGIN_RESTRICTED_LOCATION"/>
 %%           <xsd:enumeration value="API_ERROR"/>
 -define(LOGIN_ERROR_OK, "OK").
+
+-define(LOGOUT_ERROR_OK, "OK").
+-define(LOGOUT_ERROR_API_ERROR, "API_ERROR").

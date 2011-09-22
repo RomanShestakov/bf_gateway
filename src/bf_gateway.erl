@@ -15,6 +15,7 @@
 
 %% API
 -export([start_link/0]).
+-export([logout/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -22,11 +23,13 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {token}).
+-record(state, {gs_wsdl, token}).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
+logout() ->
+    gen_server:call(?SERVER, logout, infinity).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -58,10 +61,13 @@ init([]) ->
     GS_Wsdl =  detergent:initModel(betfairgateway_util:get_GS_Wsdl()), 
     Username = betfairgateway_util:get_username(),
     Password = betfairgateway_util:get_password(),
-    Token = bf_api:login(GS_Wsdl, Username, Password),
-    %%Token = test,
-    log4erl:info("succesfully logged to betfair"), 
-    {ok, #state{token = Token}}.
+    case bf_api:login(GS_Wsdl, Username, Password) of
+	{ok, Token} ->
+	    log4erl:info("succesfully logged to betfair"), 
+	    {ok, #state{gs_wsdl = GS_Wsdl, token = Token}};
+	{login_error, Err} ->
+	    {stop, Err}
+    end.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -77,6 +83,14 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+
+handle_call(logout, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
+    case bf_api:logout(GS_Wsdl, Token) of
+	{ok, NewToken} -> 
+	    {reply, ok, State#state{token = NewToken}};
+	Other ->
+	    {reply, Other, State#state{token = Token}}
+    end;
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

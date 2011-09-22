@@ -26,7 +26,8 @@ start(_StartType, _StartArgs) ->
 
 stop() ->
     log4erl:info("stopping betfairgateway"),
-    [application:stop(A) || A <- ?APPS].
+    [application:stop(A) || A <- ?APPS],
+    application:stop(betfairgateway).
 
 stop(_State) ->
     ok.
