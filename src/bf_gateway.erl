@@ -22,6 +22,10 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
+-import(betfairgateway_util, [get_username/0,
+			      get_password/0,
+			      get_GS_Wsdl/0]).
+
 -define(SERVER, ?MODULE). 
 
 -record(state, {gs_wsdl, token}).
@@ -62,10 +66,8 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    GS_Wsdl =  detergent:initModel(betfairgateway_util:get_GS_Wsdl()), 
-    Username = betfairgateway_util:get_username(),
-    Password = betfairgateway_util:get_password(),
-    case bf_api:login(GS_Wsdl, Username, Password) of
+    GS_Wsdl = detergent:initModel(get_GS_Wsdl()), 
+    case bf_api:login(GS_Wsdl, get_username(), get_password()) of
 	{ok, Token} ->
 	    log4erl:info("succesfully logged to betfair"), 	    
 	    {ok, #state{gs_wsdl = GS_Wsdl, token = Token}};
