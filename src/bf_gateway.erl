@@ -63,9 +63,10 @@ init([]) ->
     Password = betfairgateway_util:get_password(),
     case bf_api:login(GS_Wsdl, Username, Password) of
 	{ok, Token} ->
-	    log4erl:info("succesfully logged to betfair"), 
+	    log4erl:info("succesfully logged to betfair"), 	    
 	    {ok, #state{gs_wsdl = GS_Wsdl, token = Token}};
 	{login_error, Err} ->
+	    log4erl:error("error logging to betfair ~p", [Err]),
 	    {stop, Err}
     end.
 
@@ -88,8 +89,9 @@ handle_call(logout, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
     case bf_api:logout(GS_Wsdl, Token) of
 	{ok, NewToken} -> 
 	    {reply, ok, State#state{token = NewToken}};
-	Other ->
-	    {reply, Other, State#state{token = Token}}
+	Err ->
+	    log4erl:error("error logging out from betfair ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
     end;
 handle_call(_Request, _From, State) ->
     Reply = ok,

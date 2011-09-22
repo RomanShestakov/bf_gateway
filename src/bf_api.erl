@@ -12,7 +12,7 @@
 %% login to betfair
 %% @end
 %%--------------------------------------------------------------------
--spec login(any(), string(), string()) -> string().
+-spec login(any(), string(), string()) -> {ok, string()} | {login_error, any()}.
 login(GS_Wsdl, Username, Password) ->
     LoginReq = #'P:LoginReq'{
       username=Username,
@@ -21,7 +21,6 @@ login(GS_Wsdl, Username, Password) ->
       locationId=0,
       productId=82,
       vendorSoftwareId = 0},
-    
     log4erl:debug("sending login req ~p", [LoginReq]),
     %% get reponse from betfair API and extract Token
     try
@@ -35,7 +34,7 @@ login(GS_Wsdl, Username, Password) ->
 							    minorErrorCode = MErrCode}}]} ->
 		case ErrCode == ?LOGIN_ERROR_OK of
 		    true -> {ok, Token};
-		    false -> {login_error, ErrCode, MErrCode}
+		    false -> {login_error, {ErrCode, MErrCode}}
 		end;
 	    Other ->
 		{login_error, Other}
@@ -47,9 +46,10 @@ login(GS_Wsdl, Username, Password) ->
 
 %%--------------------------------------------------------------------
 %% @doc
+%% logout from betfair
 %% @end
 %%--------------------------------------------------------------------
-%-spec
+-spec logout(any(), string()) -> {ok, string()} | {logout_error, any()}. 
 logout(GS_Wsdl, Token) ->
     log4erl:debug("sending logout req"),
     LogoutReq = #'P:LogoutReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
@@ -63,7 +63,7 @@ logout(GS_Wsdl, Token) ->
 							     minorErrorCode = MErrCode}}]} ->
 		case ErrCode == ?LOGOUT_ERROR_OK of
 		    true -> {ok, NewToken};
-		    false -> {logout_error, ErrCode, MErrCode, NewToken}
+		    false -> {logout_error, {ErrCode, MErrCode}}
 		end;
 	    Other ->
 		{logout_error, Other}
@@ -72,6 +72,6 @@ logout(GS_Wsdl, Token) ->
 	Err ->
 	    {logout_error, Err}
     end.
-	
-	    
+
+
 
