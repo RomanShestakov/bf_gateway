@@ -5,12 +5,13 @@
 -include("../include/BFGlobalService.hrl").
 -include("../include/BFExchangeService.hrl").
 -include("../include/BFGlobalServiceErrCodes.hrl").
+
+
 %%--------------------------------------------------------------------
 %% @doc
 %% @spec
 %% @end
 %%--------------------------------------------------------------------
-
 login(GS_Wsdl, Username, Password) ->
     LoginReq = #'P:LoginReq'{
       username=Username,

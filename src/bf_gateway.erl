@@ -38,6 +38,7 @@
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
+
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
@@ -58,6 +59,7 @@ init([]) ->
     Username = betfairgateway_util:get_username(),
     Password = betfairgateway_util:get_password(),
     Token = bf_api:login(GS_Wsdl, Username, Password),
+    %%Token = test,
     log4erl:info("succesfully logged to betfair"), 
     {ok, #state{token = Token}}.
 
