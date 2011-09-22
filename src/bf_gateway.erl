@@ -15,7 +15,8 @@
 
 %% API
 -export([start_link/0]).
--export([logout/0]).
+-export([logout/0,
+	 keepalive/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -29,7 +30,10 @@
 %%% API
 %%%===================================================================
 logout() ->
-    gen_server:call(?SERVER, logout, infinity).
+    gen_server:call(?SERVER, logout).
+
+keepalive() ->
+    gen_server:call(?SERVER, keepalive).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -91,6 +95,14 @@ handle_call(logout, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
 	    {reply, ok, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error logging out from betfair ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
+    end;
+handle_call(keepalive, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
+    case bf_api:keepalive(GS_Wsdl, Token) of
+	{ok, NewToken} -> 
+	    {reply, ok, State#state{token = NewToken}};
+	Err ->
+	    log4erl:error("error with keepalive ~p", [Err]),
 	    {reply, Err, State#state{token = Token}}
     end;
 handle_call(_Request, _From, State) ->

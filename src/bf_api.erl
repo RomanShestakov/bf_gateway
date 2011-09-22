@@ -1,7 +1,8 @@
 -module(bf_api).
 
 -export([login/3,
-	logout/2]).
+	 logout/2,
+	 keepalive/2]).
 
 -include("../include/BFGlobalService.hrl").
 -include("../include/BFExchangeService.hrl").
@@ -36,12 +37,10 @@ login(GS_Wsdl, Username, Password) ->
 		    true -> {ok, Token};
 		    false -> {login_error, {ErrCode, MErrCode}}
 		end;
-	    Other ->
-		{login_error, Other}
+	    Other -> {login_error, Other}
 	end
     catch
-	Err ->
-	    {login_error, Err}
+	Err -> {login_error, Err}
     end.
 
 %%--------------------------------------------------------------------
@@ -65,13 +64,33 @@ logout(GS_Wsdl, Token) ->
 		    true -> {ok, NewToken};
 		    false -> {logout_error, {ErrCode, MErrCode}}
 		end;
-	    Other ->
-		{logout_error, Other}
+	    Other -> {logout_error, Other}
 	end
     catch
-	Err ->
-	    {logout_error, Err}
+	Err -> {logout_error, Err}
     end.
 
 
-
+%%--------------------------------------------------------------------
+%% @doc
+%% keepalive
+%% @end
+%%--------------------------------------------------------------------
+-spec keepalive(any(), string()) -> {ok, string()} | {keepalive_error, any()}.
+keepalive(GS_Wsdl, Token) ->
+    log4erl:debug("sending keepAlive"),
+    KeepAliveReq = #'P:KeepAliveReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
+    try
+	KeepAliveResp = detergent:call(GS_Wsdl, "keepAlive", [KeepAliveReq]),
+	log4erl:debug("keepalive resp ~p", [KeepAliveResp]),
+	case KeepAliveResp of
+	    {ok, _, [#'p:keepAliveResponse'{'Result' =
+						#'P:KeepAliveResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+								   apiVersion = _ApiVersion,
+								   minorErrorCode = _MErrCode}}]} ->
+		{ok, NewToken};
+	    Other -> {keepalive_error, Other}
+	end
+    catch
+	Err -> {keepalive_error, Err}
+    end.
