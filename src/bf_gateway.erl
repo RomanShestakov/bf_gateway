@@ -7,11 +7,7 @@
 %%% Created : 20 Sep 2011 by Roman Shestakov <>
 %%%-------------------------------------------------------------------
 -module(bf_gateway).
-
 -behaviour(gen_server).
-
-%% -include("../include/BFExchangeService.hrl").
-%% -include("../include/BFGlobalService.hrl").
 
 %% API
 -export([start_link/0]).
