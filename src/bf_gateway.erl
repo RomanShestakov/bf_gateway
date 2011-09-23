@@ -15,7 +15,9 @@
 -export([login/2,
 	 logout/0,
 	 keepAlive/0,
-	 getActiveEventTypes/0]).
+	 getActiveEventTypes/0,
+	 getAllEventTypes/0
+	]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -47,6 +49,9 @@ keepAlive() ->
 
 getActiveEventTypes() ->
     gen_server:call(?SERVER, getActiveEventTypes).
+
+getAllEventTypes() ->
+    gen_server:call(?SERVER, getAllEventTypes).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -135,6 +140,14 @@ handle_call(getActiveEventTypes, _From, #state{gs_wsdl = GS_Wsdl, token = Token}
 	    {reply, EventTypes, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error with getActiveEventTypes ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
+    end;
+handle_call(getAllEventTypes, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
+    case bf_api:getAllEventTypes(GS_Wsdl, Token) of
+	{ok, NewToken, EventTypes} -> 
+	    {reply, EventTypes, State#state{token = NewToken}};
+	Err ->
+	    log4erl:error("error with getAllEventTypes ~p", [Err]),
 	    {reply, Err, State#state{token = Token}}
     end;
 handle_call(_Request, _From, State) ->
