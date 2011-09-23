@@ -15,7 +15,9 @@
 
 %% API
 -export([start_link/0]).
--export([logout/0,
+
+-export([login/2,
+	 logout/0,
 	 keepalive/0]).
 
 %% gen_server callbacks
@@ -33,6 +35,10 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
+
+login(Username, Password) ->
+    gen_server:call(?SERVER, {login, Username, Password}).
+
 logout() ->
     gen_server:call(?SERVER, logout).
 
@@ -91,6 +97,14 @@ init([]) ->
 %% @end
 %%--------------------------------------------------------------------
 
+handle_call({login, Username, Password}, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
+    case bf_api:login(GS_Wsdl, Username, Password) of
+	{ok, NewToken} -> 
+	    {reply, ok, State#state{token = NewToken}};
+	Err ->
+	    log4erl:error("error logging to betfair ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
+    end;
 handle_call(logout, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
     case bf_api:logout(GS_Wsdl, Token) of
 	{ok, NewToken} -> 
