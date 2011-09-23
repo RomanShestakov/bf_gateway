@@ -14,7 +14,7 @@
 
 -export([login/2,
 	 logout/0,
-	 keepalive/0,
+	 keepAlive/0,
 	 getActiveEventTypes/0]).
 
 %% gen_server callbacks
@@ -28,6 +28,7 @@
 			     ]).
 
 -define(SERVER, ?MODULE). 
+-define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min
 
 -record(state, {gs_wsdl, gx_wsdl, token}).
 
@@ -41,7 +42,7 @@ login(Username, Password) ->
 logout() ->
     gen_server:call(?SERVER, logout).
 
-keepalive() ->
+keepAlive() ->
     gen_server:call(?SERVER, keepalive).
 
 getActiveEventTypes() ->
@@ -80,7 +81,9 @@ init([]) ->
     %% login to betfair
     case bf_api:login(GS_Wsdl, get_username(), get_password()) of
 	{ok, Token} ->
-	    log4erl:info("succesfully logged to betfair"), 	    
+	    log4erl:info("succesfully logged to betfair"),
+	    %% start keepalive loop to make sure the connection won't timeout
+	    spawn_link(fun() -> keepalive_timer(?KEEP_ALIVE_TIMEOUT) end),
 	    {ok, #state{gs_wsdl = GS_Wsdl, gx_wsdl = GX_Wsdl, token = Token}};
 	{login_error, Err} ->
 	    log4erl:error("error logging to betfair ~p", [Err]),
@@ -192,3 +195,14 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+%%--------------------------------------------------------------------
+%% @doc
+%% recursively call keepalive to keep connection to betfair open
+%% @end
+%%--------------------------------------------------------------------
+-spec keepalive_timer(integer()) -> no_return().
+keepalive_timer(Timeout) ->
+    timer:sleep(Timeout),
+    log4erl:info("sending keepalive..."),
+    bf_gateway:keepAlive(),
+    keepalive_timer(Timeout).
