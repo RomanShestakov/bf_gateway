@@ -18,7 +18,8 @@
 
 -export([login/2,
 	 logout/0,
-	 keepalive/0]).
+	 keepalive/0,
+	 getActiveEventTypes/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -26,11 +27,13 @@
 
 -import(betfairgateway_util, [get_username/0,
 			      get_password/0,
-			      get_GS_Wsdl/0]).
+			      get_GS_Wsdl/0,
+			      get_GX_Wsdl/0
+			     ]).
 
 -define(SERVER, ?MODULE). 
 
--record(state, {gs_wsdl, token}).
+-record(state, {gs_wsdl, gx_wsdl, token}).
 
 %%%===================================================================
 %%% API
@@ -44,6 +47,9 @@ logout() ->
 
 keepalive() ->
     gen_server:call(?SERVER, keepalive).
+
+getActiveEventTypes() ->
+    gen_server:call(?SERVER, getActiveEventTypes).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -72,11 +78,14 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    GS_Wsdl = detergent:initModel(get_GS_Wsdl()), 
+    %% init SOAP service wsdl files
+    GS_Wsdl = detergent:initModel(get_GS_Wsdl()),
+    GX_Wsdl = detergent:initModel(get_GX_Wsdl()),
+    %% login to betfair
     case bf_api:login(GS_Wsdl, get_username(), get_password()) of
 	{ok, Token} ->
 	    log4erl:info("succesfully logged to betfair"), 	    
-	    {ok, #state{gs_wsdl = GS_Wsdl, token = Token}};
+	    {ok, #state{gs_wsdl = GS_Wsdl, gx_wsdl = GX_Wsdl, token = Token}};
 	{login_error, Err} ->
 	    log4erl:error("error logging to betfair ~p", [Err]),
 	    {stop, Err}
@@ -119,6 +128,14 @@ handle_call(keepalive, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) 
 	    {reply, ok, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error with keepalive ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
+    end;
+handle_call(getActiveEventTypes, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
+    case bf_api:getActiveEventTypes(GS_Wsdl, Token) of
+	{ok, NewToken, EventTypes} -> 
+	    {reply, EventTypes, State#state{token = NewToken}};
+	Err ->
+	    log4erl:error("error with getActiveEventTypes ~p", [Err]),
 	    {reply, Err, State#state{token = Token}}
     end;
 handle_call(_Request, _From, State) ->

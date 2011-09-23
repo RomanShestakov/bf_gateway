@@ -1,6 +1,12 @@
 -module(betfairgateway_util).
 
--compile([export_all]).
+-export([
+	 log4erl_config/0,
+	 get_username/0,
+	 get_password/0,
+	 get_GS_Wsdl/0,
+	 get_GX_Wsdl/0
+	]).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -15,6 +21,11 @@ log4erl_config() ->
 	undefined -> throw({error, log4erl_config_not_defined})
     end.
 
+%%--------------------------------------------------------------------
+%% @doc
+%% get betfair username
+%% @end
+%%--------------------------------------------------------------------
 -spec get_username() -> string() | no_return().
 get_username() ->
     case application:get_env(betfairgateway, username) of
@@ -22,6 +33,11 @@ get_username() ->
 	undefined -> throw({error, username_not_defined})
     end.
 
+%%--------------------------------------------------------------------
+%% @doc
+%% get passord
+%% @end
+%%--------------------------------------------------------------------
 -spec get_password() -> string() | no_return().
 get_password() ->
     case application:get_env(betfairgateway, password) of
@@ -29,6 +45,20 @@ get_password() ->
 	undefined -> throw({error, password_not_defined})
     end.
 
-
+%%--------------------------------------------------------------------
+%% @doc
+%% get BFGlobalService.wsdl
+%% @end
+%%--------------------------------------------------------------------
+-spec get_GS_Wsdl() -> string().
 get_GS_Wsdl() ->
     "file://" ++ code:priv_dir(betfairgateway) ++ "/BFGlobalService.wsdl".
+
+%%--------------------------------------------------------------------
+%% @doc
+%% get BFExchangeService.wsdl
+%% @end
+%%--------------------------------------------------------------------
+-spec get_GX_Wsdl() -> string().
+get_GX_Wsdl() ->
+    "file://" ++ code:priv_dir(betfairgateway) ++ "/BFExchangeService.wsdl".
