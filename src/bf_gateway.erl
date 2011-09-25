@@ -167,14 +167,17 @@ handle_call(getAllMarkets, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = Sta
 	    {reply, Err, State#state{token = Token}}
     end;
 handle_call({getMarket, MarketId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
-    case bf_api:getMarket(GX_Wsdl, Token, MarketId) of
-	{ok, NewToken, Market} -> 
-	    {reply, Market, State#state{token = NewToken}};
-	Err ->
-	    log4erl:error("error with getMarket ~p", [Err]),
-	    {reply, Err, State#state{token = Token}}
+    try
+	{ok, NewToken, Market} = bf_api:getMarket(GX_Wsdl, Token, MarketId),
+	{reply, Market, State#state{token = NewToken}}
+    catch
+	throw:{getMarket_error, {ErrCode, _MErrCode}, NToken} ->
+	    log4erl:error("error with getMarket ~p", [ErrCode]),
+	    {reply, ErrCode, State#state{token = NToken}};
+	throw:{getMarket_unknown_error, OtherErr} ->
+	    log4erl:error("unknown error with getMarket ~p", [OtherErr]),
+	    {reply, OtherErr, State#state{token = Token}}
     end;
-
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

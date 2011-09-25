@@ -1,6 +1,6 @@
 -module(bf_json).
 
--export([market/1]).
+-export([encode/1]).
 
 -include("../include/BFGlobalService.hrl").
 -include("../include/BFExchangeService.hrl").
@@ -11,8 +11,8 @@
 %% convert value "Market" returned by GetMarket call into json
 %% @end
 %%--------------------------------------------------------------------
--spec market(#'P:Market'{}) -> binary().
-market(#'P:Market'{'countryISO3' = CountryISO3,
+%%-spec encode(#'P:Market'{}) -> binary().
+encode(#'P:Market'{'countryISO3' = CountryISO3,
 	 	   'discountAllowed' = DiscountAllowed,
  		   'eventTypeId' = EventTypeId,
  		   'lastRefresh' = LastRefresh,
@@ -69,6 +69,6 @@ market(#'P:Market'{'countryISO3' = CountryISO3,
 						 {runnersMayBeAdded, RunnersMayBeAdded},
 						 {timezone, Timezone},
 						 {unit, Unit}
-						]})).
-%% market(Market) ->
-%%     {unexpected_value, Market}.
+						]}));
+encode(Other) ->
+    throw({bf_json_error, {unknown_value, Other}}).

@@ -227,8 +227,7 @@ getAllMarkets(GX_Wsdl, Token) ->
 									      minorErrorCode = MErrCode}}]} ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
-		    true -> 
-			{ok, NewToken, MarketData};
+		    true ->  {ok, NewToken, MarketData};
 		    false -> {getAllMarkets_error, {ErrCode, MErrCode}}
 		end;
 	    Other -> {getAllMarkets_error, Other}
@@ -238,32 +237,32 @@ getAllMarkets(GX_Wsdl, Token) ->
     end.
 
 
-
+%%--------------------------------------------------------------------
+%% @doc
+%% The API GetMarket service allows the customer to input a Market ID and retrieve all static market data for the market requested.
+%% To get a Market ID for the betting market associated with an event you are interested in, use the GetEvents command.
+%% @end
+%%--------------------------------------------------------------------
+-spec getMarket(any(), string(), integer()) -> {ok, string(), binary()} | no_return().
 getMarket(GX_Wsdl, Token, MarketId) -> 
     GetMarketReq = #'P:GetMarketReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 				     'marketId' = MarketId,
 				     'includeCouponLinks' = false,
-				     'locale' = ?LOCALE
-				    },
-    try
-	log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
-	GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
-	log4erl:debug("getMarket resp ~p", [GetMarketResp]),
-	case GetMarketResp of
-	    {ok, _, [#'p:getMarketResponse'{'Result' =
-						#'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
-								   market = Market,
-								   errorCode = ErrCode,
-								   minorErrorCode = MErrCode}}]} ->
-		
-		case ErrCode == ?GET_MARKET_ERROR_OK of
-		    true -> 
-			Json = bf_json:market(Market),
-			{ok, NewToken, Json};
-		    false -> {getMarket_error, {ErrCode, MErrCode}}
-		end;
-	    Other -> {getMarket_error, Other}
-	end
-    catch
-	Err -> {getMarket_error, Err}
+				     'locale' = ?LOCALE},
+    log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
+    GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
+    log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
+    case GetMarketResp of
+	{ok, _, [#'p:getMarketResponse'{'Result' =
+					    #'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+							       market = Market,
+							       errorCode = ErrCode,
+							       minorErrorCode = MErrCode}}]} ->
+	    
+	    case ErrCode == ?GET_MARKET_ERROR_OK of
+		true ->  {ok, NewToken, bf_json:encode(Market)};
+		false -> throw({getMarket_error, {ErrCode, MErrCode}, NewToken})
+	    end;
+	Other -> throw({getMarket_unknown_error, Other})
     end.
+	
