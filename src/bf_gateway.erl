@@ -16,7 +16,9 @@
 	 logout/0,
 	 keepAlive/0,
 	 getActiveEventTypes/0,
-	 getAllEventTypes/0
+	 getAllEventTypes/0,
+	 getAllMarkets/0,
+	 getMarket/1
 	]).
 
 %% gen_server callbacks
@@ -52,6 +54,12 @@ getActiveEventTypes() ->
 
 getAllEventTypes() ->
     gen_server:call(?SERVER, getAllEventTypes).
+
+getAllMarkets() ->
+    gen_server:call(?SERVER, getAllMarkets, infinity).
+
+getMarket(MarketId) ->
+    gen_server:call(?SERVER, {getMarket, MarketId}, infinity).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -150,6 +158,23 @@ handle_call(getAllEventTypes, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = 
 	    log4erl:error("error with getAllEventTypes ~p", [Err]),
 	    {reply, Err, State#state{token = Token}}
     end;
+handle_call(getAllMarkets, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    case bf_api:getAllMarkets(GX_Wsdl, Token) of
+	{ok, NewToken, MarketData} -> 
+	    {reply, MarketData, State#state{token = NewToken}};
+	Err ->
+	    log4erl:error("error with getAllMarkets ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
+    end;
+handle_call({getMarket, MarketId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    case bf_api:getMarket(GX_Wsdl, Token, MarketId) of
+	{ok, NewToken, Market} -> 
+	    {reply, Market, State#state{token = NewToken}};
+	Err ->
+	    log4erl:error("error with getMarket ~p", [Err]),
+	    {reply, Err, State#state{token = Token}}
+    end;
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

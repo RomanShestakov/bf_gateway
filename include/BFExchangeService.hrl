@@ -19,7 +19,7 @@
 -record('P:ArrayOfCancelBetsByMarketResult', {anyAttribs, 'CancelBetsByMarketResult'}).
 -record('P:ArrayOfCancelBetsResult', {anyAttribs, 'CancelBetsResult'}).
 -record('P:ArrayOfCountryCode', {anyAttribs, 'Country'}).
-%% -record('P:ArrayOfCouponLinks', {anyAttribs, 'CouponLink'}).
+%-record('P:ArrayOfCouponLinks', {anyAttribs, 'CouponLink'}).
 -record('P:ArrayOfCouponMarket', {anyAttribs, 'CouponMarket'}).
 -record('P:ArrayOfCouponSelection', {anyAttribs, 'CouponSelection'}).
 -record('P:ArrayOfEventId', {anyAttribs, 'EventId'}).

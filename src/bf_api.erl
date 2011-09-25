@@ -3,16 +3,21 @@
 -export([login/3,
 	 logout/2,
 	 keepalive/2,
+	 convertCurrency/2,
+	 getAllCurrencies/2,
+	 getAllCurrenciesV2/2,
 	 getActiveEventTypes/2,
-	 getAllEventTypes/2
-	]).
-
--export([convertCurrency/0
+	 getAllEventTypes/2,
+	 getAllMarkets/2,
+	 getMarket/3
 	]).
 
 -include("../include/BFGlobalService.hrl").
 -include("../include/BFExchangeService.hrl").
 -include("../include/BFGlobalServiceErrCodes.hrl").
+
+
+-define(LOCALE, "en").
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -21,16 +26,14 @@
 %%--------------------------------------------------------------------
 -spec login(any(), string(), string()) -> {ok, string()} | {login_error, any()}.
 login(GS_Wsdl, Username, Password) ->
-    LoginReq = #'P:LoginReq'{
-      username=Username,
-      password=Password,      
-      ipAddress="0",
-      locationId=0,
-      productId=82,
-      vendorSoftwareId = 0},
-    log4erl:debug("sending login req ~p", [LoginReq]),
-    %% get reponse from betfair API and extract Token
+    LoginReq = #'P:LoginReq'{ username = Username,
+			      password = Password,      
+			      ipAddress = "0",
+			      locationId = 0,
+			      productId = 82,
+			      vendorSoftwareId = 0},
     try
+	log4erl:debug("sending login req ~p", [LoginReq]),
 	LoginResp = detergent:call(GS_Wsdl, "login", [LoginReq]),
 	log4erl:debug("got login resp ~p", [LoginResp]),
 	case LoginResp of
@@ -56,9 +59,9 @@ login(GS_Wsdl, Username, Password) ->
 %%--------------------------------------------------------------------
 -spec logout(any(), string()) -> {ok, string()} | {logout_error, any()}. 
 logout(GS_Wsdl, Token) ->
-    log4erl:debug("sending logout req"),
     LogoutReq = #'P:LogoutReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
     try
+	log4erl:debug("sending logout req ~p", [LogoutReq]),
 	LogoutResp = detergent:call(GS_Wsdl, "logout", [LogoutReq]),
 	log4erl:debug("logout resp ~p", [LogoutResp]),
 	case LogoutResp of
@@ -84,9 +87,9 @@ logout(GS_Wsdl, Token) ->
 %%--------------------------------------------------------------------
 -spec keepalive(any(), string()) -> {ok, string()} | {keepalive_error, any()}.
 keepalive(GS_Wsdl, Token) ->
-    log4erl:debug("sending keepAlive"),
     KeepAliveReq = #'P:KeepAliveReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
     try
+	log4erl:debug("sending keepAlive ~p", [KeepAliveReq]),
 	KeepAliveResp = detergent:call(GS_Wsdl, "keepAlive", [KeepAliveReq]),
 	log4erl:debug("keepalive resp ~p", [KeepAliveResp]),
 	case KeepAliveResp of
@@ -107,8 +110,15 @@ keepalive(GS_Wsdl, Token) ->
 %% @end
 %%--------------------------------------------------------------------
 %-spec
-convertCurrency() ->
+convertCurrency(_GS_Wsdl, _Token) ->
     throw(not_implemented).
+
+getAllCurrencies(_GS_Wsdl, _Token) ->
+    throw(not_implemented).
+
+getAllCurrenciesV2(_GS_Wsdl, _Token) ->
+    throw(not_implemented).
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -121,10 +131,10 @@ convertCurrency() ->
 %%--------------------------------------------------------------------
 -spec getActiveEventTypes(any(), string()) -> {ok, string(), [{integer(), string(), integer(), integer()}]} | {getActiveEventTypes_error, any()}.
 getActiveEventTypes(GS_Wsdl, Token) ->
-    log4erl:debug("sending getActiveEventTypes"),
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
-						   'locale' = ""},
+						   'locale' = ?LOCALE},
     try
+	log4erl:debug("sending getActiveEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getActiveEventTypes", [GetActiveEventTypesReq]),
 	log4erl:debug("getActiveEventTypes resp ~p", [GetEventTypesResp]),
 	case GetEventTypesResp of
@@ -163,10 +173,10 @@ getActiveEventTypes(GS_Wsdl, Token) ->
 %%--------------------------------------------------------------------
 -spec getAllEventTypes(any(), string()) -> {ok, string(), [{integer(), string(), integer(), integer()}]} | {getAllEventTypes_error, any()}.
 getAllEventTypes(GS_Wsdl, Token) -> 
-    log4erl:debug("sending getAllEventTypes"),
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
-						   'locale' = ""},
+						   'locale' = ?LOCALE},
     try
+	log4erl:debug("sending getAllEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getAllEventTypes", [GetActiveEventTypesReq]),
 	log4erl:debug("getAllEventTypes resp ~p", [GetEventTypesResp]),
 	case GetEventTypesResp of
@@ -190,4 +200,70 @@ getAllEventTypes(GS_Wsdl, Token) ->
 	end
     catch
 	Err -> {getActiveEventTypes_error, Err}
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc
+%% @end
+%%--------------------------------------------------------------------
+%-spec getAllMarkets() ->
+getAllMarkets(GX_Wsdl, Token) -> 
+    GetAllMarketsReq = #'P:GetAllMarketsReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
+					     'locale' = "",
+ 					     'eventTypeIds' = #'P:ArrayOfInt'{'int' = []},
+  					     'countries' = #'P:ArrayOfCountryCode'{'Country' = []},
+  					     'fromDate' = "",
+  					     'toDate' = ""					     
+					    },
+    try
+	log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
+	GetAllMarketsResp = detergent:call(GX_Wsdl, "getAllMarkets", [GetAllMarketsReq]),
+	log4erl:debug("getAllMarkets resp ~p", [GetAllMarketsResp]),
+	case GetAllMarketsResp of
+	    {ok, _, [#'p:getAllMarketsResponse'{'Result' =
+						       #'P:GetAllMarketsResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+									      marketData = MarketData,
+									      errorCode = ErrCode,
+									      minorErrorCode = MErrCode}}]} ->
+		
+		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
+		    true -> 
+			{ok, NewToken, MarketData};
+		    false -> {getAllMarkets_error, {ErrCode, MErrCode}}
+		end;
+	    Other -> {getAllMarkets_error, Other}
+	end
+    catch
+	Err -> {getAllMarkets_error, Err}
+    end.
+
+
+
+getMarket(GX_Wsdl, Token, MarketId) -> 
+    GetMarketReq = #'P:GetMarketReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
+				     'marketId' = MarketId,
+				     'includeCouponLinks' = false,
+				     'locale' = ?LOCALE
+				    },
+    try
+	log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
+	GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
+	log4erl:debug("getMarket resp ~p", [GetMarketResp]),
+	case GetMarketResp of
+	    {ok, _, [#'p:getMarketResponse'{'Result' =
+						#'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+								   market = Market,
+								   errorCode = ErrCode,
+								   minorErrorCode = MErrCode}}]} ->
+		
+		case ErrCode == ?GET_MARKET_ERROR_OK of
+		    true -> 
+			Json = bf_json:market(Market),
+			{ok, NewToken, Json};
+		    false -> {getMarket_error, {ErrCode, MErrCode}}
+		end;
+	    Other -> {getMarket_error, Other}
+	end
+    catch
+	Err -> {getMarket_error, Err}
     end.

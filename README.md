@@ -41,6 +41,17 @@ Wsdl2 = detergent:initModel("file://../priv/BFExchangeService.wsdl").
 detergent:write_hrl("file://./priv/BFGlobalService.wsdl", "BFGlobalService.hrl", "BFG").
 detergent:write_hrl("file://./priv/BFExchangeService.wsdl", "BFExchangeService.hrl", "BFE").
 
+need to edit erlsom_parse.erl, comment out
+	  %% case TypeDef#type.nillable of
+%% 	    true ->
+%% 	      ok;
+%% 	    Err1 ->
+%%               throw({error, "Unexpected attribute 555: " ++ LocalName, TypeDef, Err1})
+%% 	  end;
+
+
+
+
 ## Testing
 
 License
