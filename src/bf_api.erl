@@ -8,7 +8,7 @@
 	 getAllCurrenciesV2/2,
 	 getActiveEventTypes/2,
 	 getAllEventTypes/2,
-	 getAllMarkets/2,
+	 getAllMarkets/3,
 	 getMarket/3
 	]).
 
@@ -18,6 +18,7 @@
 
 
 -define(LOCALE, "en").
+-define(COUNTRY, "GBR").
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -202,39 +203,46 @@ getAllEventTypes(GS_Wsdl, Token) ->
 	Err -> {getActiveEventTypes_error, Err}
     end.
 
+
 %%--------------------------------------------------------------------
 %% @doc
 %% @end
 %%--------------------------------------------------------------------
-%-spec getAllMarkets() ->
-getAllMarkets(GX_Wsdl, Token) -> 
+-spec getAllMarkets(any(), string(), nil | [integer]) -> {ok, string(), string()} | no_return().
+getAllMarkets(GX_Wsdl, Token, EventTypeId) -> 
+    %% set eventTypeId param 
+    EventTypeParam = 
+	case EventTypeId == nil of
+	    true -> nil;
+	    false -> #'P:ArrayOfInt'{'int' = EventTypeId}
+	end,
+    %% the final soap request
     GetAllMarketsReq = #'P:GetAllMarketsReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
-					     'locale' = "",
- 					     'eventTypeIds' = #'P:ArrayOfInt'{'int' = []},
-  					     'countries' = #'P:ArrayOfCountryCode'{'Country' = []},
-  					     'fromDate' = "",
-  					     'toDate' = ""					     
-					    },
+ 					     'locale' = ?LOCALE,
+  					     'eventTypeIds' = EventTypeParam,
+  					     'countries' = #'P:ArrayOfCountryCode'{'Country' = [?COUNTRY]},
+  					     'fromDate' = nil,
+  					     'toDate' = nil},
+    log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
     try
-	log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
 	GetAllMarketsResp = detergent:call(GX_Wsdl, "getAllMarkets", [GetAllMarketsReq]),
-	log4erl:debug("getAllMarkets resp ~p", [GetAllMarketsResp]),
+	%%log4erl:debug("getAllMarkets resp ~p", [GetAllMarketsResp]),
 	case GetAllMarketsResp of
 	    {ok, _, [#'p:getAllMarketsResponse'{'Result' =
-						       #'P:GetAllMarketsResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
-									      marketData = MarketData,
-									      errorCode = ErrCode,
-									      minorErrorCode = MErrCode}}]} ->
+						    #'P:GetAllMarketsResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+									   marketData = MarketData,
+									   errorCode = ErrCode,
+									   minorErrorCode = MErrCode}}]} ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
 		    true ->  {ok, NewToken, MarketData};
-		    false -> {getAllMarkets_error, {ErrCode, MErrCode}}
+		    false -> throw({getAllMarkets_error, {ErrCode, MErrCode}})
 		end;
-	    Other -> {getAllMarkets_error, Other}
+	    Other -> throw({getAllMarkets_unknown_error, Other})
 	end
-    catch
-	Err -> {getAllMarkets_error, Err}
-    end.
+   catch
+       Err -> throw({soap_call_error, Err})
+   end.	  
 
 
 %%--------------------------------------------------------------------

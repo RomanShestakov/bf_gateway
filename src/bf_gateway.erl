@@ -18,6 +18,7 @@
 	 getActiveEventTypes/0,
 	 getAllEventTypes/0,
 	 getAllMarkets/0,
+	 getAllMarkets/1,
 	 getMarket/1
 	]).
 
@@ -56,7 +57,10 @@ getAllEventTypes() ->
     gen_server:call(?SERVER, getAllEventTypes).
 
 getAllMarkets() ->
-    gen_server:call(?SERVER, getAllMarkets, infinity).
+    getAllMarkets(nil).
+
+getAllMarkets(MarketTypeId) ->
+    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}, infinity).
 
 getMarket(MarketId) ->
     gen_server:call(?SERVER, {getMarket, MarketId}, infinity).
@@ -158,13 +162,20 @@ handle_call(getAllEventTypes, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = 
 	    log4erl:error("error with getAllEventTypes ~p", [Err]),
 	    {reply, Err, State#state{token = Token}}
     end;
-handle_call(getAllMarkets, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
-    case bf_api:getAllMarkets(GX_Wsdl, Token) of
-	{ok, NewToken, MarketData} -> 
-	    {reply, MarketData, State#state{token = NewToken}};
-	Err ->
-	    log4erl:error("error with getAllMarkets ~p", [Err]),
-	    {reply, Err, State#state{token = Token}}
+handle_call({getAllMarkets, MarketTypeId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    try
+	{ok, NewToken, MarketData} = bf_api:getAllMarkets(GX_Wsdl, Token, MarketTypeId),
+	{reply, MarketData, State#state{token = NewToken}}
+    catch
+	throw:{getAllMarkets_error, {ErrCode, _MErrCode}, NToken} ->
+	    log4erl:error("error with getAllMarkets ~p", [ErrCode]),
+	    {reply, ErrCode, State#state{token = NToken}};
+	throw:{getAllMarket_unknown_error, OtherErr} ->
+	    log4erl:error("unknown error with getAllMarket ~p", [OtherErr]),
+	    {reply, OtherErr, State#state{token = Token}};
+        Err ->
+	    log4erl:error("soap error calling getAllMarket ~p", [Err]),
+	    {reply, soap_call_err, State#state{token = Token}}
     end;
 handle_call({getMarket, MarketId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
     try
