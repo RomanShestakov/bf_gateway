@@ -3,24 +3,6 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-%% -define(EXPECTED, 
-%% <<"digraph mdigraph{
-%% ratio=compress;
-%% ranksep=.75;
-%% size=\"7.5, 7.5\";
-%% \"C\"->\"C~1\";
-%% \"C\"->\"C~0\";
-%% \"A\"->\"B\";
-%% \"B\"->\"C\";
-%% \"C\"[style=filled,fillcolor=green,shape=hexagon,]
-%% \"A\"[style=filled,fillcolor=green,shape=ellipse,]
-%% \"B\"[style=filled,fillcolor=green,shape=box,]
-%% \"C~1\"[style=filled,fillcolor=lightblue,shape=box,]
-%% \"C~0\"[style=filled,fillcolor=lightblue,shape=box,]
-%% }">>).
-
-
-
 -define(MARKET, {'P:Market', [{{"type","http://www.w3.org/2001/XMLSchema-instance"}, "n2:Market"}],
 		 "GBR",true,1,"1317415810918","5.0", "Test desction",
 		 true,"0001-01-01T00:00:00.000Z",102873781,"ACTIVE",
