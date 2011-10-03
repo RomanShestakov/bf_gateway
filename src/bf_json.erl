@@ -27,7 +27,7 @@ encode(#'P:Market'{'countryISO3' = CountryISO3,
  		   'marketType' = MarketType,
  		   'marketTypeVariant' = MarketTypeVariant,
 %%  		   'menuPath' = menuPath,
- 		   'eventHierarchy' = #'P:ArrayOfEventId'{'EventId' = EventHierarchy},
+ 		   'eventHierarchy' = EventHierarchy, %% #'P:ArrayOfEventId'{'EventId' = EventHierarchy},
  		   'name' = Name,
  		   'numberOfWinners' = NumberOfWinners,
 		   'parentEventId' = ParentEventId,
@@ -41,34 +41,76 @@ encode(#'P:Market'{'countryISO3' = CountryISO3,
 		   'licenceId' = LicenceId,
 		   'couponLinks' = #'P:ArrayOfCouponLinks'{'CouponLink' = CouponLinks},
 		   'bspMarket' = BspMarket}) ->
-    iolist_to_binary(mochijson2:encode({struct, [{bspMarket, BspMarket},
-						 {countryISO3, CountryISO3},
-						 {couponLinks, CouponLinks},
-						 {discountAllowed, DiscountAllowed},
-						 {eventHierarchy, EventHierarchy},
-						 {eventTypeId, EventTypeId},
-						 {interval, Interval},
-						 {lastRefresh, LastRefresh},
-						 {licenceId, LicenceId},
-						 {marketBaseRate, MarketBaseRate},
-						 {marketDescription, MarketDescription},
-						 {marketDescriptionHasDate, MarketDiscriptionHasDate},
-						 {marketDisplayTime, MarketDisplayTime},
-						 {marketId, MarketId},
-						 {marketStatus, MarketStatus},
-						 {marketSuspendTime, MarketSuspendTime},
-						 {marketTime, MarketTime},
-						 {marketType, MarketType},
-						 {marketTypeVariant, MarketTypeVariant},
-						 {maxUnitValue, MaxUnitValue},
-						 {minUnitValue, MinUnitValue},
-						 {name, Name},
-						 {numberOfWinners, NumberOfWinners},
-						 {parentEventId, ParentEventId},
-						 {runners, Runners},
-						 {runnersMayBeAdded, RunnersMayBeAdded},
-						 {timezone, Timezone},
-						 {unit, Unit}
-						]}));
+    try
+	iolist_to_binary(
+	  mochijson2:encode({struct, [ {bspMarket, BspMarket},
+				       {countryISO3, list_to_binary(CountryISO3)},
+				       {couponLinks, CouponLinks},
+				       {discountAllowed, DiscountAllowed},
+				       {eventHierarchy, eventId(EventHierarchy)},
+				       {eventTypeId, EventTypeId},
+				       {interval, list_to_binary(Interval)},
+				       {lastRefresh, list_to_binary(LastRefresh)},
+				       {licenceId, LicenceId},
+				       {marketBaseRate, list_to_binary(MarketBaseRate)},
+				       {marketDescription, list_to_binary(MarketDescription)},
+				       {marketDescriptionHasDate, MarketDiscriptionHasDate},
+				       {marketDisplayTime, list_to_binary(MarketDisplayTime)},
+				       {marketId, MarketId},
+				       {marketStatus, list_to_binary(MarketStatus)},
+				       {marketSuspendTime, list_to_binary(MarketSuspendTime)},
+				       {marketTime, list_to_binary(MarketTime)},
+				       {marketType, list_to_binary(MarketType)},
+				       {marketTypeVariant, list_to_binary(MarketTypeVariant)},
+				       {maxUnitValue, list_to_binary(MaxUnitValue)},
+				       {minUnitValue, list_to_binary(MinUnitValue)},
+ 				       {name, list_to_binary(Name)},
+				       {numberOfWinners, NumberOfWinners},
+				       {parentEventId, ParentEventId},
+				       {runners, runners(Runners,[])},
+				       {runnersMayBeAdded, RunnersMayBeAdded},
+				       {timezone, list_to_binary(Timezone)},
+				       {unit, Unit}
+				     ]}))
+    catch
+	_:_ -> {bf_json_encode_error}
+    end;
+
+%% encode({market_data, MarketData}) ->
+%%     Markets = string:tokens(MarketData, ":"),
+%%     parse_market_data(Markets);
+
 encode(Other) ->
-    throw({bf_json_error, {unknown_value, Other}}).
+    %%throw({bf_json_error, {unknown_value, Other}}).
+    Other.
+
+runners([], R) -> {struct, R};
+runners([ #'P:Runner'{'asianLineId' = AsianLineId, 'handicap' = Handicap, 'name' = Name, 'selectionId' = SelectionId} | T], R) ->
+    runners(T, [{struct,[{'asianLineId', AsianLineId},
+			 {'handicap', list_to_binary(Handicap)},
+			 {'name', list_to_binary(Name)},
+			 {'selectionId', SelectionId}]} | R]).
+
+eventId(#'P:ArrayOfEventId'{'EventId' = EventId}) -> EventId.
+    
+%% parse_market_data(Markets) ->
+%%     Fields = string:tokens(Markets, "~").
+
+
+%% encode(<<:MarketId
+%% 	 ~MarketName
+%% 	 ~MarketType
+%% 	 ~MarketStatus
+%% 	 ~EventDate
+%% 	 ~MenuPath
+%% 	 ~EventHierarchy
+%% 	 ~BetDelay
+%% 	 ~ExchangeId
+%% 	 ~ISO3CountryCode
+%% 	 ~LastRefresh
+%% 	 ~NumberOfRunners
+%% 	 ~NumberOfWinners
+%% 	 ~TotalAmountMatched
+%% 	 ~BPSMarket
+%% 	 ~TurningIntoPlay,,Rest/binary>>, Acc) ->
+%%     encode(Rest, []

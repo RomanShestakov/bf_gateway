@@ -235,7 +235,7 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 									   minorErrorCode = MErrCode}}]} ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
-		    true ->  {ok, NewToken, MarketData};
+		    true ->  {ok, NewToken, bf_json:encode(term_to_binary(MarketData))};
 		    false -> throw({getAllMarkets_error, {ErrCode, MErrCode}})
 		end;
 	    Other -> throw({getAllMarkets_unknown_error, Other})
@@ -257,15 +257,18 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 				     'marketId' = MarketId,
 				     'includeCouponLinks' = false,
 				     'locale' = ?LOCALE},
-    log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
+    %%log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
     GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
-    log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
+    %%log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
     case GetMarketResp of
 	{ok, _, [#'p:getMarketResponse'{'Result' =
 					    #'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
 							       market = Market,
 							       errorCode = ErrCode,
 							       minorErrorCode = MErrCode}}]} ->
+	    %%io:format("Market ~p~n", [Market]),
+	%% 	M = bf_json:encode(Market),
+%% 		io:format("~w~n", [M]),
 	    
 	    case ErrCode == ?GET_MARKET_ERROR_OK of
 		true ->  {ok, NewToken, bf_json:encode(Market)};
