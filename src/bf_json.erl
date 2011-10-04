@@ -84,7 +84,7 @@ encode(Other) ->
     %%throw({bf_json_error, {unknown_value, Other}}).
     Other.
 
-runners([], R) -> {struct, R};
+runners([], R) -> R;
 runners([ #'P:Runner'{'asianLineId' = AsianLineId, 'handicap' = Handicap, 'name' = Name, 'selectionId' = SelectionId} | T], R) ->
     runners(T, [{struct,[{'asianLineId', AsianLineId},
 			 {'handicap', list_to_binary(Handicap)},
