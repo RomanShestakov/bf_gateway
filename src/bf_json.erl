@@ -12,35 +12,35 @@
 %% @end
 %%--------------------------------------------------------------------
 %%-spec encode(#'P:Market'{}) -> binary().
-encode(#'P:Market'{'countryISO3' = CountryISO3,
-	 	   'discountAllowed' = DiscountAllowed,
- 		   'eventTypeId' = EventTypeId,
- 		   'lastRefresh' = LastRefresh,
- 		   'marketBaseRate' = MarketBaseRate,
- 		   'marketDescription' = MarketDescription,
- 		   'marketDescriptionHasDate' = MarketDiscriptionHasDate,
- 		   'marketDisplayTime' = MarketDisplayTime,
- 		   'marketId' = MarketId,
- 		   'marketStatus' = MarketStatus,
- 		   'marketSuspendTime' = MarketSuspendTime,
- 		   'marketTime' = MarketTime,
- 		   'marketType' = MarketType,
- 		   'marketTypeVariant' = MarketTypeVariant,
-%%  		   'menuPath' = menuPath,
- 		   'eventHierarchy' = EventHierarchy, %% #'P:ArrayOfEventId'{'EventId' = EventHierarchy},
- 		   'name' = Name,
- 		   'numberOfWinners' = NumberOfWinners,
-		   'parentEventId' = ParentEventId,
- 		   'runners' = #'P:ArrayOfRunner'{'Runner' = Runners},
- 		   'unit' = Unit,
-		   'maxUnitValue' = MaxUnitValue,
-		   'minUnitValue' = MinUnitValue,
-		   'interval' = Interval,
-		   'runnersMayBeAdded' = RunnersMayBeAdded,
-		   'timezone' = Timezone,
-		   'licenceId' = LicenceId,
-		   'couponLinks' = #'P:ArrayOfCouponLinks'{'CouponLink' = CouponLinks},
-		   'bspMarket' = BspMarket}) ->
+encode({market, #'P:Market'{'countryISO3' = CountryISO3,
+			    'discountAllowed' = DiscountAllowed,
+			    'eventTypeId' = EventTypeId,
+			    'lastRefresh' = LastRefresh,
+			    'marketBaseRate' = MarketBaseRate,
+			    'marketDescription' = MarketDescription,
+			    'marketDescriptionHasDate' = MarketDiscriptionHasDate,
+			    'marketDisplayTime' = MarketDisplayTime,
+			    'marketId' = MarketId,
+			    'marketStatus' = MarketStatus,
+			    'marketSuspendTime' = MarketSuspendTime,
+			    'marketTime' = MarketTime,
+			    'marketType' = MarketType,
+			    'marketTypeVariant' = MarketTypeVariant,
+			    %%  		   'menuPath' = menuPath,
+			    'eventHierarchy' = EventHierarchy, %% #'P:ArrayOfEventId'{'EventId' = EventHierarchy},
+			    'name' = Name,
+			    'numberOfWinners' = NumberOfWinners,
+			    'parentEventId' = ParentEventId,
+			    'runners' = #'P:ArrayOfRunner'{'Runner' = Runners},
+			    'unit' = Unit,
+			    'maxUnitValue' = MaxUnitValue,
+			    'minUnitValue' = MinUnitValue,
+			    'interval' = Interval,
+			    'runnersMayBeAdded' = RunnersMayBeAdded,
+			    'timezone' = Timezone,
+			    'licenceId' = LicenceId,
+			    'couponLinks' = #'P:ArrayOfCouponLinks'{'CouponLink' = CouponLinks},
+			    'bspMarket' = BspMarket}}) ->
     try
 	iolist_to_binary(
 	  mochijson2:encode({struct, [ {bspMarket, BspMarket},
@@ -76,7 +76,18 @@ encode(#'P:Market'{'countryISO3' = CountryISO3,
 	_:_ -> {bf_json_encode_error}
     end;
 
-encode(Bin) when is_binary(Bin) ->
+
+encode({event_type_items, EventTypeItems}) ->
+    io:format("~p~n", [EventTypeItems]),
+    iolist_to_binary(
+      mochijson2:encode([{struct, [{'Id', Id},
+				   {'Name', list_to_binary(Name)},
+				   {'MarketId', MarketId},
+				   {'ExchangeId', ExchId}]} || #'P:EventType'{'id' = Id,
+									      'name' = Name,
+									      'nextMarketId' = MarketId,
+									      'exchangeId' = ExchId} <- EventTypeItems]));
+encode({all_markets, Bin}) ->
     L = encode(Bin, [], [], []),
     iolist_to_binary(
       mochijson2:encode([{struct, [{'MarketId', list_to_integer(MarketId)},
@@ -126,6 +137,8 @@ runners([ #'P:Runner'{'asianLineId' = AsianLineId, 'handicap' = Handicap, 'name'
 			 {'selectionId', SelectionId}]} | R]).
 
 eventId(#'P:ArrayOfEventId'{'EventId' = EventId}) -> EventId.
+
+
 
 
 

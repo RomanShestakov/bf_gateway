@@ -23,11 +23,16 @@
 -define(MARKETDATA,<<":20158165~Match Odds~O~ACTIVE~1164223800000~\Soccer\Scottish Soccer\Bells League Div 1\Fixtures 22 November \Partick v Clyde~/1/2695886/610072/10551708/10551709/20158165~0~1~GBR~1164192924479~3~1~8737.44~N~N:">>).
 -define(EXPECTED_MARKETDATA,<<"[{\"MarketId\":20158165,\"MarketName\":\"Match Odds\",\"MarketType\":\"O\",\"MarketStatus\":\"ACTIVE\",\"EventDate\":\"1164223800000\",\"MenuPath\":\"SoccerScottish SoccerBells League Div 1Fixtures 22 November Partick v Clyde\",\"EventHierarchy\":\"/1/2695886/610072/10551708/10551709/20158165\",\"BetDelay\":\"0\",\"ExchangeId\":1,\"CountryISO3\":\"GBR\",\"LastRefresh\":\"1164192924479\",\"NumberOfRunners\":3,\"NumberOfWinners\":1,\"TotalAmountMatched\":8737.44,\"BspMarket\":\"N\",\"TurningIntoPlay\":\"N\"}]">>).
 
+-define(EVENTYPE, [{'P:EventType',[{{"type","http://www.w3.org/2001/XMLSchema-instance"},"n2:EventType"}], 189929,"Poker Room",0,0},
+		   {'P:EventType',[{{"type","http://www.w3.org/2001/XMLSchema-instance"}, "n2:EventType"}], 2791893,"Yahoo Racing",0,0}]).
+
+-define(EXPECTED_EVENTTYPE, <<"[{\"Id\":189929,\"Name\":\"Poker Room\",\"MarketId\":0,\"ExchangeId\":0},{\"Id\":2791893,\"Name\":\"Yahoo Racing\",\"MarketId\":0,\"ExchangeId\":0}]">>).
 
 
 json_encode_test_() ->
     [
-     ?_assertEqual(?EXPECTED_MARKET, bf_json:encode(?MARKET)),
-     ?_assertEqual(?EXPECTED_MARKETDATA, bf_json:encode(?MARKETDATA))
+     ?_assertEqual(?EXPECTED_MARKET, bf_json:encode({market, ?MARKET})),
+     ?_assertEqual(?EXPECTED_MARKETDATA, bf_json:encode({all_markets, ?MARKETDATA})),
+     ?_assertEqual(?EXPECTED_EVENTTYPE, bf_json:encode({event_type_items, ?EVENTYPE}))
     ].
 

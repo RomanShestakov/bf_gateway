@@ -177,9 +177,9 @@ getAllEventTypes(GS_Wsdl, Token) ->
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 						   'locale' = ?LOCALE},
     try
-	log4erl:debug("sending getAllEventTypes ~p", [GetActiveEventTypesReq]),
+	%%log4erl:debug("sending getAllEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getAllEventTypes", [GetActiveEventTypesReq]),
-	log4erl:debug("getAllEventTypes resp ~p", [GetEventTypesResp]),
+	%%log4erl:debug("getAllEventTypes resp ~p", [GetEventTypesResp]),
 	case GetEventTypesResp of
 	    {ok, _, [#'p:getAllEventTypesResponse'{'Result' =
 						       #'P:GetEventTypesResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -188,14 +188,8 @@ getAllEventTypes(GS_Wsdl, Token) ->
 									      minorErrorCode = MErrCode}}]} ->
 		
 		case ErrCode == ?GET_EVENTS_ERROR_OK of
-		    true -> 
-			EventTypes = [{Id, Name, MarketId, ExchId} || #'P:EventType'{'id' = Id,
-										     'name' = Name,
-										     'nextMarketId' = MarketId,
-										     'exchangeId' = ExchId} <- EventTypeItems],
-			
-			{ok, NewToken, EventTypes};
-		    false -> {getAllEventTypes_error, {ErrCode, MErrCode}}
+		    true -> {ok, NewToken, bf_json:encode({event_type_items, EventTypeItems})};
+		    false -> throw({getAllEventTypes, {ErrCode, MErrCode}})
 		end;
 	    Other -> {getAllEventTypes_error, Other}
 	end
@@ -208,7 +202,7 @@ getAllEventTypes(GS_Wsdl, Token) ->
 %% @doc
 %% @end
 %%--------------------------------------------------------------------
--spec getAllMarkets(any(), string(), nil | [integer]) -> {ok, string(), string()} | no_return().
+-spec getAllMarkets(any(), string(), nil | [integer]) -> {ok, string(), binary()} | no_return().
 getAllMarkets(GX_Wsdl, Token, EventTypeId) -> 
     %% set eventTypeId param 
     EventTypeParam = 
@@ -235,7 +229,7 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 									   minorErrorCode = MErrCode}}]} ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
-		    true ->  {ok, NewToken, bf_json:encode(list_to_binary(MarketData))};
+		    true ->  {ok, NewToken, bf_json:encode({all_markets, list_to_binary(MarketData)})};
 		    false -> throw({getAllMarkets_error, {ErrCode, MErrCode}})
 		end;
 	    Other -> throw({getAllMarkets_unknown_error, Other})
@@ -266,12 +260,8 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 							       market = Market,
 							       errorCode = ErrCode,
 							       minorErrorCode = MErrCode}}]} ->
-	    %%io:format("Market ~p~n", [Market]),
-	%% 	M = bf_json:encode(Market),
-%% 		io:format("~w~n", [M]),
-	    
 	    case ErrCode == ?GET_MARKET_ERROR_OK of
-		true ->  {ok, NewToken, bf_json:encode(Market)};
+		true ->  {ok, NewToken, bf_json:encode({market, Market})};
 		false -> throw({getMarket_error, {ErrCode, MErrCode}, NewToken})
 	    end;
 	Other -> throw({getMarket_unknown_error, Other})
