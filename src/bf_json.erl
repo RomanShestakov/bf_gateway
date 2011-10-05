@@ -78,7 +78,6 @@ encode({market, #'P:Market'{'countryISO3' = CountryISO3,
 
 
 encode({event_type_items, EventTypeItems}) ->
-    io:format("~p~n", [EventTypeItems]),
     iolist_to_binary(
       mochijson2:encode([{struct, [{'Id', Id},
 				   {'Name', list_to_binary(Name)},
