@@ -47,10 +47,10 @@ login(GS_Wsdl, Username, Password) ->
 		    true -> {ok, Token};
 		    false -> {login_error, {ErrCode, MErrCode}}
 		end;
-	    Other -> {login_error, Other}
+	    Other -> {login_unknown_error, Other}
 	end
     catch
-	Err -> {login_error, Err}
+	Err -> {detergent_call_error, Err}
     end.
 
 %%--------------------------------------------------------------------
@@ -74,10 +74,10 @@ logout(GS_Wsdl, Token) ->
 		    true -> {ok, NewToken};
 		    false -> {logout_error, {ErrCode, MErrCode}}
 		end;
-	    Other -> {logout_error, Other}
+	    Other -> {logout_unknown_error, Other}
 	end
     catch
-	Err -> {logout_error, Err}
+	Err -> {detergent_call_error, Err}
     end.
 
 
@@ -102,7 +102,7 @@ keepalive(GS_Wsdl, Token) ->
 	    Other -> {keepalive_error, Other}
 	end
     catch
-	Err -> {keepalive_error, Err}
+	Err -> {detergent_call_error, Err}
     end.
 
 
@@ -135,30 +135,23 @@ getActiveEventTypes(GS_Wsdl, Token) ->
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 						   'locale' = ?LOCALE},
     try
-	log4erl:debug("sending getActiveEventTypes ~p", [GetActiveEventTypesReq]),
+	%%log4erl:debug("sending getActiveEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getActiveEventTypes", [GetActiveEventTypesReq]),
-	log4erl:debug("getActiveEventTypes resp ~p", [GetEventTypesResp]),
+	%%log4erl:debug("getActiveEventTypes resp ~p", [GetEventTypesResp]),
 	case GetEventTypesResp of
 	    {ok, _, [#'p:getActiveEventTypesResponse'{'Result' =
 							  #'P:GetEventTypesResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
 										 eventTypeItems = #'P:ArrayOfEventType'{'EventType' = EventTypeItems},
 										 errorCode = ErrCode,
-										 minorErrorCode = MErrCode}}]} ->
-		
+										 minorErrorCode = MErrCode}}]} ->		
 		case ErrCode == ?GET_EVENTS_ERROR_OK of
-		    true -> 
-			EventTypes = [{Id, Name, MarketId, ExchId} || #'P:EventType'{'id' = Id,
-										     'name' = Name,
-										     'nextMarketId' = MarketId,
-										     'exchangeId' = ExchId} <- EventTypeItems],
-			
-			{ok, NewToken, EventTypes};
+		    true ->  {ok, NewToken, bf_json:encode({event_type_items, EventTypeItems})};
 		    false -> {getActiveEventTypes_error, {ErrCode, MErrCode}}
 		end;
-	    Other -> {getActiveEventTypes_error, Other}
+	    Other -> {getActiveEventTypes_unknown_error, Other}
 	end
     catch
-	Err -> {getActiveEventTypes_error, Err}
+	Err -> {detergent_call_error, Err}
     end.
 
 
@@ -189,12 +182,12 @@ getAllEventTypes(GS_Wsdl, Token) ->
 		
 		case ErrCode == ?GET_EVENTS_ERROR_OK of
 		    true -> {ok, NewToken, bf_json:encode({event_type_items, EventTypeItems})};
-		    false -> throw({getAllEventTypes, {ErrCode, MErrCode}})
+		    false -> {getAllEventTypes_error, {ErrCode, MErrCode}}
 		end;
-	    Other -> {getAllEventTypes_error, Other}
+	    Other -> {getAllEventTypes_unknown_error, Other}
 	end
     catch
-	Err -> {getActiveEventTypes_error, Err}
+	Err -> {detergent_call_error, Err}
     end.
 
 
@@ -217,7 +210,7 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
   					     'countries' = #'P:ArrayOfCountryCode'{'Country' = [?COUNTRY]},
   					     'fromDate' = nil,
   					     'toDate' = nil},
-    log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
+    %%log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
     try
 	GetAllMarketsResp = detergent:call(GX_Wsdl, "getAllMarkets", [GetAllMarketsReq]),
 	%%log4erl:debug("getAllMarkets resp ~p", [GetAllMarketsResp]),
@@ -230,12 +223,12 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
 		    true ->  {ok, NewToken, bf_json:encode({all_markets, list_to_binary(MarketData)})};
-		    false -> throw({getAllMarkets_error, {ErrCode, MErrCode}})
+		    false -> {getAllMarkets_error, {ErrCode, MErrCode}}
 		end;
-	    Other -> throw({getAllMarkets_unknown_error, Other})
+	    Other -> {getAllMarkets_unknown_error, Other}
 	end
    catch
-       Err -> throw({soap_call_error, Err})
+       Err -> {detergent_call_error, Err}
    end.	  
 
 
@@ -252,18 +245,22 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 				     'includeCouponLinks' = false,
 				     'locale' = ?LOCALE},
     %%log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
-    GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
-    %%log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
-    case GetMarketResp of
-	{ok, _, [#'p:getMarketResponse'{'Result' =
-					    #'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
-							       market = Market,
-							       errorCode = ErrCode,
-							       minorErrorCode = MErrCode}}]} ->
-	    case ErrCode == ?GET_MARKET_ERROR_OK of
-		true ->  {ok, NewToken, bf_json:encode({market, Market})};
-		false -> throw({getMarket_error, {ErrCode, MErrCode}, NewToken})
-	    end;
-	Other -> throw({getMarket_unknown_error, Other})
-    end.
-	
+    try
+	GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
+	%%log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
+	case GetMarketResp of
+	    {ok, _, [#'p:getMarketResponse'{'Result' =
+						#'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+								   market = Market,
+								   errorCode = ErrCode,
+								   minorErrorCode = MErrCode}}]} ->
+		case ErrCode == ?GET_MARKET_ERROR_OK of
+		    true ->  {ok, NewToken, bf_json:encode({market, Market})};
+		    false -> {getMarket_error, {ErrCode, MErrCode}, NewToken}
+		end;
+	    Other -> {getMarket_unknown_error, Other}
+	end
+    catch
+	Err -> {detergent_call_error, Err}
+    end.	  
+
