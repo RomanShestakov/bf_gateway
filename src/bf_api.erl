@@ -235,7 +235,7 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 									   minorErrorCode = MErrCode}}]} ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
-		    true ->  {ok, NewToken, bf_json:encode(term_to_binary(MarketData))};
+		    true ->  {ok, NewToken, bf_json:encode(list_to_binary(MarketData))};
 		    false -> throw({getAllMarkets_error, {ErrCode, MErrCode}})
 		end;
 	    Other -> throw({getAllMarkets_unknown_error, Other})

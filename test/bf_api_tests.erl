@@ -18,10 +18,16 @@
 		 {'P:ArrayOfCouponLinks', [{{"nil","http://www.w3.org/2001/XMLSchema-instance"},"1"}],undefined},
 		 false}).
 
--define(EXPECTED, <<"{\"bspMarket\":false,\"countryISO3\":\"GBR\",\"couponLinks\":\"undefined\",\"discountAllowed\":true,\"eventHierarchy\":[1,258597,2022802],\"eventTypeId\":1,\"interval\":\"0.0\",\"lastRefresh\":\"1317415810918\",\"licenceId\":1,\"marketBaseRate\":\"5.0\",\"marketDescription\":\"Test desction\",\"marketDescriptionHasDate\":true,\"marketDisplayTime\":\"0001-01-01T00:00:00.000Z\",\"marketId\":102873781,\"marketStatus\":\"ACTIVE\",\"marketSuspendTime\":\"2011-08-13T14:00:00.000Z\",\"marketTime\":\"2011-08-13T11:45:00.000Z\",\"marketType\":\"O\",\"marketTypeVariant\":\"D\",\"maxUnitValue\":\"0.0\",\"minUnitValue\":\"0.0\",\"name\":\"Top English Goalscorer 2011/12\",\"numberOfWinners\":1,\"parentEventId\":2022802,\"runners\":[{\"asianLineId\":0,\"handicap\":\"0.0\",\"name\":\"DJ Campbell\",\"selectionId\":1339169},{\"asianLineId\":0,\"handicap\":\"0.0\",\"name\":\"Darren Bent\",\"selectionId\":2315604},{\"asianLineId\":0,\"handicap\":\"0.0\",\"name\":\"Wayne Rooney\",\"selectionId\":2305696}],\"runnersMayBeAdded\":true,\"timezone\":\"UKT\",\"unit\":[]}">>).
+-define(EXPECTED_MARKET, <<"{\"bspMarket\":false,\"countryISO3\":\"GBR\",\"couponLinks\":\"undefined\",\"discountAllowed\":true,\"eventHierarchy\":[1,258597,2022802],\"eventTypeId\":1,\"interval\":\"0.0\",\"lastRefresh\":\"1317415810918\",\"licenceId\":1,\"marketBaseRate\":\"5.0\",\"marketDescription\":\"Test desction\",\"marketDescriptionHasDate\":true,\"marketDisplayTime\":\"0001-01-01T00:00:00.000Z\",\"marketId\":102873781,\"marketStatus\":\"ACTIVE\",\"marketSuspendTime\":\"2011-08-13T14:00:00.000Z\",\"marketTime\":\"2011-08-13T11:45:00.000Z\",\"marketType\":\"O\",\"marketTypeVariant\":\"D\",\"maxUnitValue\":\"0.0\",\"minUnitValue\":\"0.0\",\"name\":\"Top English Goalscorer 2011/12\",\"numberOfWinners\":1,\"parentEventId\":2022802,\"runners\":[{\"asianLineId\":0,\"handicap\":\"0.0\",\"name\":\"DJ Campbell\",\"selectionId\":1339169},{\"asianLineId\":0,\"handicap\":\"0.0\",\"name\":\"Darren Bent\",\"selectionId\":2315604},{\"asianLineId\":0,\"handicap\":\"0.0\",\"name\":\"Wayne Rooney\",\"selectionId\":2305696}],\"runnersMayBeAdded\":true,\"timezone\":\"UKT\",\"unit\":[]}">>).
+
+-define(MARKETDATA,<<":20158165~Match Odds~O~ACTIVE~1164223800000~\Soccer\Scottish Soccer\Bells League Div 1\Fixtures 22 November \Partick v Clyde~/1/2695886/610072/10551708/10551709/20158165~0~1~GBR~1164192924479~3~1~8737.44~N~N:">>).
+-define(EXPECTED_MARKETDATA,<<"[{\"MarketId\":20158165,\"MarketName\":\"Match Odds\",\"MarketType\":\"O\",\"MarketStatus\":\"ACTIVE\",\"EventDate\":\"1164223800000\",\"MenuPath\":\"SoccerScottish SoccerBells League Div 1Fixtures 22 November Partick v Clyde\",\"EventHierarchy\":\"/1/2695886/610072/10551708/10551709/20158165\",\"BetDelay\":\"0\",\"ExchangeId\":1,\"CountryISO3\":\"GBR\",\"LastRefresh\":\"1164192924479\",\"NumberOfRunners\":3,\"NumberOfWinners\":1,\"TotalAmountMatched\":8737.44,\"BspMarket\":\"N\",\"TurningIntoPlay\":\"N\"}]">>).
+
+
 
 json_encode_test_() ->
     [
-     ?_assertEqual(?EXPECTED, bf_json:encode(?MARKET))
+     ?_assertEqual(?EXPECTED_MARKET, bf_json:encode(?MARKET)),
+     ?_assertEqual(?EXPECTED_MARKETDATA, bf_json:encode(?MARKETDATA))
     ].
 
