@@ -90,9 +90,9 @@ logout(GS_Wsdl, Token) ->
 keepalive(GS_Wsdl, Token) ->
     KeepAliveReq = #'P:KeepAliveReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
     try
-	log4erl:debug("sending keepAlive ~p", [KeepAliveReq]),
+	%%log4erl:info("sending keepAlive ..."),
 	KeepAliveResp = detergent:call(GS_Wsdl, "keepAlive", [KeepAliveReq]),
-	log4erl:debug("keepalive resp ~p", [KeepAliveResp]),
+	%%log4erl:debug("keepalive resp ~p", [KeepAliveResp]),
 	case KeepAliveResp of
 	    {ok, _, [#'p:keepAliveResponse'{'Result' =
 						#'P:KeepAliveResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
