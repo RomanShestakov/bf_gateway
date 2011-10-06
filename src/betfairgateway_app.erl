@@ -24,7 +24,8 @@ start(_StartType, _StartArgs) ->
 
 stop() ->
     log4erl:info("stopping betfairgateway"),
-    [application:stop(A) || A <- ?APPS].
+    [application:stop(A) || A <- lists:reverse(?APPS)],
+    ssl:stop().
 
 stop(_State) ->
     ok.

@@ -34,9 +34,9 @@ login(GS_Wsdl, Username, Password) ->
 			      productId = 82,
 			      vendorSoftwareId = 0},
     try
-	log4erl:debug("sending login req ~p", [LoginReq]),
+	%%log4erl:debug("sending login req ~p", [LoginReq]),
 	LoginResp = detergent:call(GS_Wsdl, "login", [LoginReq]),
-	log4erl:debug("got login resp ~p", [LoginResp]),
+	%%log4erl:debug("got login resp ~p", [LoginResp]),
 	case LoginResp of
 	    {ok, _, [#'p:loginResponse'{ 'Result' =
 					     #'P:LoginResp'{header = #'P:APIResponseHeader'{'sessionToken' = Token},
@@ -62,9 +62,9 @@ login(GS_Wsdl, Username, Password) ->
 logout(GS_Wsdl, Token) ->
     LogoutReq = #'P:LogoutReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
     try
-	log4erl:debug("sending logout req ~p", [LogoutReq]),
+	%%log4erl:debug("sending logout req ~p", [LogoutReq]),
 	LogoutResp = detergent:call(GS_Wsdl, "logout", [LogoutReq]),
-	log4erl:debug("logout resp ~p", [LogoutResp]),
+	%%log4erl:debug("logout resp ~p", [LogoutResp]),
 	case LogoutResp of
 	    {ok, _, [#'p:logoutResponse'{'Result' =
 					     #'P:LogoutResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},

@@ -124,7 +124,8 @@ init([]) ->
 
 handle_call({login, Username, Password}, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
     case bf_api:login(GS_Wsdl, Username, Password) of
-	{ok, NewToken} -> 
+	{ok, NewToken} ->
+	    io:format("succesfully logged to betfair"), 
 	    {reply, ok, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error logging to betfair ~p", [Err]),
@@ -133,6 +134,8 @@ handle_call({login, Username, Password}, _From, #state{gs_wsdl = GS_Wsdl, token 
 handle_call(logout, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
     case bf_api:logout(GS_Wsdl, Token) of
 	{ok, NewToken} -> 
+	    %%log4erl:info("succesfully logged out from betfair"),
+	    io:format("succesfully logged out from betfair"),
 	    {reply, ok, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error logging out from betfair ~p", [Err]),
@@ -232,6 +235,7 @@ handle_info(_Info, State) ->
 %% @end
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
+    logout(),
     ok.
 
 %%--------------------------------------------------------------------
