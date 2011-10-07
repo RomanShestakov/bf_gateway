@@ -45,6 +45,7 @@
 -record('P:ArrayOfVolumeInfo', {anyAttribs, 'VolumeInfo'}).
 -record('P:AvailabilityInfo', {anyAttribs, 'odds', 'totalAvailableBackAmount', 'totalAvailableLayAmount', 'totalBspBackAmount', 'totalBspLayAmount'}).
 -record('P:Bet', {anyAttribs, 'asianLineId', 'avgPrice', 'betId', 'betStatus', 'betType', 'betCategoryType', 'betPersistenceType', 'cancelledDate', 'lapsedDate', 'marketId', 'marketName', 'fullMarketName', 'marketType', 'marketTypeVariant', 'matchedDate', 'matchedSize', 'matches', 'placedDate', 'price', 'bspLiability', 'profitAndLoss', 'selectionId', 'selectionName', 'settledDate', 'remainingSize', 'requestedSize', 'voidedDate', 'handicap'}).
+
 -record('P:BetLite', {anyAttribs, 'betId', 'marketId', 'matchedSize', 'remainingSize', 'betStatus', 'betCategoryType', 'betPersistenceType', 'bspLiability'}).
 -record('P:Breeding', {anyAttribs, 'name', 'bred', 'yearBorn'}).
 -record('P:CancelBets', {anyAttribs, 'betId'}).

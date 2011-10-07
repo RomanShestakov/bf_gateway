@@ -76,7 +76,6 @@ encode({market, #'P:Market'{'countryISO3' = CountryISO3,
 	_:_ -> {bf_json_encode_error}
     end;
 
-
 encode({event_type_items, EventTypeItems}) ->
     iolist_to_binary(
       mochijson2:encode([{struct, [{'Id', Id},
@@ -108,6 +107,78 @@ encode({all_markets, Bin}) ->
 			    [MarketId, MarketName, MarketType, MarketStatus, EventDate, MenuPath, EventHierarchy,
 			     BetDelay, ExchangeId, ISO3CountryCode, LastRefresh, NumberOfRunners, NumberOfWinners,
 			     TotalAmountMatched, BSPMarket, TurningIntoPlay] <- L ]));
+
+
+
+
+
+encode({bet, #'P:Bet'{'asianLineId' = AsianLineId,
+		      'avgPrice' = AvgPrice,
+		      'betId' = BetId,
+		      'betStatus' = BetStatus,
+		      'betType' = BetType,
+		      'betCategoryType' = BetCategoryType,
+		      'betPersistenceType' = BetPersistenceType,
+		      'cancelledDate' = CancelledData,
+		      'lapsedDate' = LapseDate,
+		      'marketId' = MarketId,
+		      'marketName' = MarketName,
+		      'fullMarketName' = FullMarketName,
+		      'marketType' = MarketType,
+		      'marketTypeVariant' = MarketTypeVariant,
+		      'matchedDate' = MatchedDate,
+		      'matchedSize' = MatchedSize,
+		      'matches' = #'P:ArrayOfMatch'{'Match' = Matches},
+		      'placedDate' = PlacedDate,
+		      'price' = Price,
+		      'bspLiability' = BspLiability,
+		      'profitAndLoss' = ProfitAndLoss,
+		      'selectionId' = SelectionId,
+		      'selectionName' = SelectionName,
+		      'settledDate' = SettledDate,
+		      'remainingSize' = RemainingSize,
+		      'requestedSize' = RequestedSize,
+		      %%'voidedDate' = voidedDate,
+		      'handicap' = Handicap}}) ->     
+    try
+
+	io:format("matches ~p~n", [Matches]),
+	iolist_to_binary(
+	  mochijson2:encode({struct, [{'asianLineId', AsianLineId},
+				      {'avgPrice', list_to_float(AvgPrice)},
+				      {'betId', list_to_integer(BetId)},
+				      {'betStatus', list_to_binary(BetStatus)},
+				      {'betType', list_to_binary(BetType)},
+				      {'betCategoryType', list_to_binary(BetCategoryType)}, 
+				      {'betPersistenceType', list_to_binary(BetPersistenceType)},
+				      {'cancelledDate', list_to_binary(CancelledData)},
+				      {'lapsedDate', list_to_binary(LapseDate)},
+				      {'marketId', MarketId},
+				      {'marketName', list_to_binary(MarketName)},
+				      {'fullMarketName', list_to_binary(FullMarketName)},
+				      {'marketType', list_to_binary(MarketType)},
+				      {'marketTypeVariant', list_to_binary(MarketTypeVariant)},
+				      {'matchedDate', list_to_binary(MatchedDate)},
+				      {'matchedSize', list_to_float(MatchedSize)},
+				      {'matches', matches(Matches, [])},
+				      {'placedDate', list_to_binary(PlacedDate)},
+				      {'price', list_to_float(Price)},
+				      {'bspLiability', list_to_float(BspLiability)},
+ 				      {'profitAndLoss', list_to_float(ProfitAndLoss)},
+ 				      {'selectionId', SelectionId},
+				      {'selectionName', list_to_binary(SelectionName)},
+				      {'settledDate', list_to_binary(SettledDate)},
+				      {'remainingSize', list_to_float(RemainingSize)},
+				      {'requestedSize', list_to_float(RequestedSize)},
+ 				      %%{'voidedDate', VoidedDate},
+				      {'handicap', list_to_float(Handicap)}]}))
+    catch
+	_:_ -> {bf_json_encode_error}
+    end;
+
+
+
+
 encode(Other) ->
     throw({bf_json_error, {unknown_value, Other}}).
     %%Other.
@@ -128,16 +199,39 @@ encode(<<>>, Field, Line, Acc) ->
     lists:delete([[]], lists:reverse([lists:reverse([lists:reverse(Field) | Line]) | Acc])).
 
 
-runners([], R) -> R;
+runners([], R) ->
+    io:format("R ~p~n", [R]),
+    R;
 runners([ #'P:Runner'{'asianLineId' = AsianLineId, 'handicap' = Handicap, 'name' = Name, 'selectionId' = SelectionId} | T], R) ->
     runners(T, [{struct,[{'asianLineId', AsianLineId},
 			 {'handicap', list_to_binary(Handicap)},
 			 {'name', list_to_binary(Name)},
-			 {'selectionId', SelectionId}]} | R]).
+			 {'selectionId', SelectionId}]} | R]);
+runners(Other, []) ->
+    io:format("match ~p~n", [Other]).
+
 
 eventId(#'P:ArrayOfEventId'{'EventId' = EventId}) -> EventId.
 
 
-
+matches([], M) -> M;
+matches([#'P:Match'{'betStatus' = BetStatus,
+		    'matchedDate' = MatchedDate,
+		    'priceMatched' = PriceMatched,
+		    'profitLoss' = ProfitLoss,
+		    'settledDate' = SettledDate,
+		    'sizeMatched' = SizeMatched,
+		    'transactionId' = TransactionId,
+		    'voidedDate' = VoidedDate
+		   } | T], M) -> 
+    matches(T, [{struct, [ {'betStatus', list_to_binary(BetStatus)},
+			   {'matchedDate', list_to_binary(MatchedDate)},
+			   {'priceMatched', list_to_float(PriceMatched)}, 
+			   {'profitLoss', list_to_float(ProfitLoss)},
+			   {'settledDate', list_to_binary(SettledDate)},
+			   {'sizeMatched', list_to_float(SizeMatched)},
+			   {'transactionId', list_to_integer(TransactionId)},
+			   {'voidedDate', list_to_binary(VoidedDate)}
+			 ]} | M]).
 
 

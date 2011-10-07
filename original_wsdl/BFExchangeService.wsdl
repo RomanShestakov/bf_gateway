@@ -20,7 +20,7 @@ No exclusion or limitation set out in this Agreement shall apply in the case of 
   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <wsdl:types>
     <xsd:schema targetNamespace="http://www.betfair.com/publicapi/types/exchange/v5/">
-<!--       <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/"/> -->
+      <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
       <xsd:complexType abstract="true" name="APIResponse">
         <xsd:sequence>
           <xsd:element name="header" nillable="true" type="types:APIResponseHeader"/>
@@ -1677,8 +1677,7 @@ No exclusion or limitation set out in this Agreement shall apply in the case of 
         <xsd:complexContent>
           <xsd:extension base="types:APIRequest">
             <xsd:sequence>
-<!--               <xsd:element name="betId" nillable="false" type="xsd:long"/> -->
-              <xsd:element name="betId" nillable="false" type="xsd:int"/>
+              <xsd:element name="betId" nillable="false" type="xsd:long"/>
               <xsd:element name="locale" nillable="true" type="xsd:string"/>
             </xsd:sequence>
           </xsd:extension>

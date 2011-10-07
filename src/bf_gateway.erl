@@ -19,7 +19,8 @@
 	 getAllEventTypes/0,
 	 getAllMarkets/0,
 	 getAllMarkets/1,
-	 getMarket/1
+	 getMarket/1,
+	 getBet/1
 	]).
 
 %% gen_server callbacks
@@ -60,10 +61,14 @@ getAllMarkets() ->
     getAllMarkets(nil).
 
 getAllMarkets(MarketTypeId) ->
-    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}, infinity).
+    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}). %%, infinity).
 
 getMarket(MarketId) ->
-    gen_server:call(?SERVER, {getMarket, MarketId}, infinity).
+    gen_server:call(?SERVER, {getMarket, MarketId}). %%, infinity).
+
+getBet(BetId) ->
+    gen_server:call(?SERVER, {getBet, BetId}). %%, infinity).
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -191,6 +196,17 @@ handle_call({getMarket, MarketId}, _From, #state{gx_wsdl = GX_Wsdl, token = Toke
  	    {reply, Err, State#state{token = NToken}};
 	{Other, Reason} ->
 	    log4erl:error("~p error in getMarket call ~p", [Other, Reason]),
+ 	    {reply, Reason, State#state{token = Token}}
+    end;
+handle_call({getBet, BetId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    case bf_api:getBet(GX_Wsdl, Token, BetId) of
+	{ok, NewToken, Bet} ->
+	    {reply, Bet, State#state{token = NewToken}};
+	{getBet_error, Err, NToken} ->
+	    log4erl:error("error in getBet call ~p", [Err]),
+ 	    {reply, Err, State#state{token = NToken}};
+	{Other, Reason} ->
+	    log4erl:error("~p error in getBet call ~p", [Other, Reason]),
  	    {reply, Reason, State#state{token = Token}}
     end;
 handle_call(_Request, _From, State) ->

@@ -29,10 +29,39 @@
 -define(EXPECTED_EVENTTYPE, <<"[{\"Id\":189929,\"Name\":\"Poker Room\",\"MarketId\":0,\"ExchangeId\":0},{\"Id\":2791893,\"Name\":\"Yahoo Racing\",\"MarketId\":0,\"ExchangeId\":0}]">>).
 
 
+-define(BET, {'P:Bet',
+	      [{{"type",
+		 "http://www.w3.org/2001/XMLSchema-instance"},
+		"n2:Bet"}],
+	      0,"4.6","16621286071","S","B","E","NONE",
+	      "0001-01-01T00:00:00.000Z",
+	      "0001-01-01T00:00:00.000Z",103971753,
+	      "R4 2800m Hcap",
+	      "RSA / Arl (RSA) 7th Oct / 13:05 R4 2800m Hcap","O",
+	      "D","2011-10-07T11:52:23.000Z","5.0",
+	      {'P:ArrayOfMatch',
+	       [{{"type",
+		  "http://www.w3.org/2001/XMLSchema-instance"},
+		 "n2:ArrayOfMatch"}],
+	       [{'P:Match',
+		 [{{"type",
+		    "http://www.w3.org/2001/XMLSchema-instance"},
+		   "n2:Match"}],
+		 "S","2011-10-07T11:52:23.000Z","4.6","6.5",
+		 "2011-10-07T12:19:46.000Z","5.0","22859105905",
+		 "0001-01-01T00:00:00.000Z"}]},
+	      "2011-10-07T11:52:23.000Z","4.1","0.0","6.5",
+	      5508037,"October Club","2011-10-07T12:19:46.000Z",
+	      "0.0","5.0","0001-01-01T00:00:00.000Z","0.0"}).
+	
+-define(EXPECTED_BET, <<"{\"asianLineId\":0,\"avgPrice\":4.6,\"betId\":16621286071,\"betStatus\":\"S\",\"betType\":\"B\",\"betCategoryType\":\"E\",\"betPersistenceType\":\"NONE\",\"cancelledDate\":\"0001-01-01T00:00:00.000Z\",\"lapsedDate\":\"0001-01-01T00:00:00.000Z\",\"marketId\":103971753,\"marketName\":\"R4 2800m Hcap\",\"fullMarketName\":\"RSA / Arl (RSA) 7th Oct / 13:05 R4 2800m Hcap\",\"marketType\":\"O\",\"marketTypeVariant\":\"D\",\"matchedDate\":\"2011-10-07T11:52:23.000Z\",\"matchedSize\":5.0,\"matches\":[{\"betStatus\":\"S\",\"matchedDate\":\"2011-10-07T11:52:23.000Z\",\"priceMatched\":4.6,\"profitLoss\":6.5,\"settledDate\":\"2011-10-07T12:19:46.000Z\",\"sizeMatched\":5.0,\"transactionId\":22859105905,\"voidedDate\":\"0001-01-01T00:00:00.000Z\"}],\"placedDate\":\"2011-10-07T11:52:23.000Z\",\"price\":4.1,\"bspLiability\":0.0,\"profitAndLoss\":6.5,\"selectionId\":5508037,\"selectionName\":\"October Club\",\"settledDate\":\"2011-10-07T12:19:46.000Z\",\"remainingSize\":0.0,\"requestedSize\":5.0,\"handicap\":0.0}">>).
+
+
 json_encode_test_() ->
     [
      ?_assertEqual(?EXPECTED_MARKET, bf_json:encode({market, ?MARKET})),
      ?_assertEqual(?EXPECTED_MARKETDATA, bf_json:encode({all_markets, ?MARKETDATA})),
-     ?_assertEqual(?EXPECTED_EVENTTYPE, bf_json:encode({event_type_items, ?EVENTYPE}))
+     ?_assertEqual(?EXPECTED_EVENTTYPE, bf_json:encode({event_type_items, ?EVENTYPE})),
+     ?_assertEqual(?EXPECTED_BET, bf_json:encode({bet, ?BET}))
     ].
 

@@ -9,6 +9,7 @@
 	 getActiveEventTypes/2,
 	 getAllEventTypes/2,
 	 getAllMarkets/3,
+	 getBet/3,
 	 getMarket/3
 	]).
 
@@ -50,7 +51,7 @@ login(GS_Wsdl, Username, Password) ->
 	    Other -> {login_unknown_error, Other}
 	end
     catch
-	Err -> {detergent_call_error, Err}
+	Err -> {error, Err}
     end.
 
 %%--------------------------------------------------------------------
@@ -77,7 +78,7 @@ logout(GS_Wsdl, Token) ->
 	    Other -> {logout_unknown_error, Other}
 	end
     catch
-	Err -> {detergent_call_error, Err}
+	Err -> {error, Err}
     end.
 
 
@@ -102,7 +103,7 @@ keepalive(GS_Wsdl, Token) ->
 	    Other -> {keepalive_error, Other}
 	end
     catch
-	Err -> {detergent_call_error, Err}
+	Err -> {error, Err}
     end.
 
 
@@ -132,8 +133,7 @@ getAllCurrenciesV2(_GS_Wsdl, _Token) ->
 %%--------------------------------------------------------------------
 -spec getActiveEventTypes(any(), string()) -> {ok, string(), [{integer(), string(), integer(), integer()}]} | {getActiveEventTypes_error, any()}.
 getActiveEventTypes(GS_Wsdl, Token) ->
-    GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
-						   'locale' = ?LOCALE},
+    GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }, 'locale' = ?LOCALE},
     try
 	%%log4erl:debug("sending getActiveEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getActiveEventTypes", [GetActiveEventTypesReq]),
@@ -151,7 +151,7 @@ getActiveEventTypes(GS_Wsdl, Token) ->
 	    Other -> {getActiveEventTypes_unknown_error, Other}
 	end
     catch
-	Err -> {detergent_call_error, Err}
+	Err -> {error, Err}
     end.
 
 
@@ -167,8 +167,7 @@ getActiveEventTypes(GS_Wsdl, Token) ->
 %%--------------------------------------------------------------------
 -spec getAllEventTypes(any(), string()) -> {ok, string(), [{integer(), string(), integer(), integer()}]} | {getAllEventTypes_error, any()}.
 getAllEventTypes(GS_Wsdl, Token) -> 
-    GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
-						   'locale' = ?LOCALE},
+    GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },'locale' = ?LOCALE},
     try
 	%%log4erl:debug("sending getAllEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getAllEventTypes", [GetActiveEventTypesReq]),
@@ -187,7 +186,7 @@ getAllEventTypes(GS_Wsdl, Token) ->
 	    Other -> {getAllEventTypes_unknown_error, Other}
 	end
     catch
-	Err -> {detergent_call_error, Err}
+	Err -> {error, Err}
     end.
 
 
@@ -228,9 +227,40 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 	    Other -> {getAllMarkets_unknown_error, Other}
 	end
    catch
-       Err -> {detergent_call_error, Err}
+       Err -> {error, Err}
    end.	  
 
+
+%%--------------------------------------------------------------------
+%% @doc
+%% The API GetBet service allows you to retrieve information about a particular bet.
+%% Each request will retrieve all components of th%% e desired bet.
+%% @end
+%%--------------------------------------------------------------------
+-spec getBet(any(), string(), integer()) -> {ok, string(), string()} | {getBet_error, any(), string()} | 
+					    {getBet_unknown_error, any()} | {detergent_call_error, any()}.
+getBet(GX_Wsdl, Token, BetId) -> 
+    GetBetReq = #'P:GetBetReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
+			       'betId' = BetId,
+			       'locale' = ?LOCALE},
+    %%log4erl:debug("sending getBet req ~p", [GetBetReq]),
+    try
+	GetBetResp = detergent:call(GX_Wsdl, "getBet", [GetBetReq]),
+	%%log4erl:debug("received getBet resp ~p", [GetBetResp]),
+	case GetBetResp of
+	    {ok, _, [#'p:getBetResponse'{'Result' =
+					     #'P:GetBetResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+							     bet = Bet,
+							     errorCode = ErrCode}}]} ->
+		case ErrCode == ?GET_BET_ERROR_OK of
+		    true ->  {ok, NewToken, bf_json:encode({bet, Bet})};
+		    false -> {getBet_error, ErrCode, NewToken}
+		end;
+	    Other -> {getBet_unknown_error, Other}
+	end
+    catch
+	Err -> {error, Err}
+    end.	  
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -261,6 +291,6 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 	    Other -> {getMarket_unknown_error, Other}
 	end
     catch
-	Err -> {detergent_call_error, Err}
+	Err -> {error, Err}
     end.	  
 
