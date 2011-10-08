@@ -18,7 +18,7 @@ start() ->
     [begin application:start(A), io:format("~p~n", [A]) end || A <- ?APPS].
 
 start(_StartType, _StartArgs) ->
-    log4erl:conf(betfairgateway_util:log4erl_config()),
+    log4erl:conf(bf_util:log4erl_config()),
     log4erl:info("starting betfairgateway"),
     betfairgateway_sup:start_link().
 

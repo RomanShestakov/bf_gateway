@@ -28,11 +28,11 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--import(betfairgateway_util, [get_username/0,
-			      get_password/0,
-			      get_GS_Wsdl/0,
-			      get_GX_Wsdl/0
-			     ]).
+-import(bf_util, [get_username/0,
+		  get_password/0,
+		  get_GS_Wsdl/0,
+		  get_GX_Wsdl/0
+		 ]).
 
 -define(SERVER, ?MODULE). 
 -define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min

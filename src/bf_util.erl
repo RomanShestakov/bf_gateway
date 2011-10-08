@@ -1,4 +1,4 @@
--module(betfairgateway_util).
+-module(bf_util).
 
 -export([
 	 log4erl_config/0,

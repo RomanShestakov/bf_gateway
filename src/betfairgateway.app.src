@@ -12,7 +12,7 @@
                  ]},
   {mod, { betfairgateway_app, [betfairgateway_app,
 			      betfairgateway_sup,
-			      betfairgateway_util,
+			      bf_util,
 			      bf_api,
 			      bf_gateway,
 			      bf_json]}},
