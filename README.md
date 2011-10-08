@@ -9,6 +9,7 @@ eventually, this application should be able to accept subsribe requests and pull
 1. Erlsom for XML parsing (there are couple of problems with the original version of erlsom, raised issues to the owner of project. for now need to use fork in git@github.com:RomanShestakov/erlsom.git)
 2. Detergent for SOAP interactions
 3. log4erl for logging
+4. mochiweb for json parsing
 
 ## Building
 
