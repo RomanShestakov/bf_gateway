@@ -16,8 +16,8 @@
 			      bf_api,
 			      bf_gateway,
 			      bf_json]}},
-  {env, [{username, "rshestakov"},
-	 {password, "SHESTAK0V"},
+  {env, [{username, ""}, %% betfair username
+	 {password, ""}, %% betfair password
 	 {locationId, 0},
 	 {productId, 82},
 	 {vendorSoftwareId, 0},
