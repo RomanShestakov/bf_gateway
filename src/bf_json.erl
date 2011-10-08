@@ -76,6 +76,27 @@ encode({market, #'P:Market'{'countryISO3' = CountryISO3,
 	_:_ -> {bf_json_encode_error}
     end;
 
+encode({marketInfo, #'P:MarketLite'{'marketStatus' = MarketStatus,
+				    'marketSuspendTime' = MarketSuspendTime,
+				    'marketTime' = MarketTime,
+				    'numberOfRunners' = NumberOfRunners,
+				    'delay' = Delay,
+				    'reconciled' = Reconciled,
+				    'openForBspBetting'	= OpenBspBetting}}) ->
+    try
+	iolist_to_binary(
+	  mochijson2:encode({struct, [{'marketStatus', list_to_binary(MarketStatus)},
+				      {'marketSuspendTime', list_to_binary(MarketSuspendTime)},
+				      {'marketTime', list_to_binary(MarketTime)},
+				      {'numberofRunners', NumberOfRunners},
+				      {'delay', Delay},
+ 				      {'reconciled', Reconciled},
+ 				      {'openForBspBetting', OpenBspBetting}
+				     ]}))
+    catch
+	_:_ -> {bf_json_encode_error}
+    end;
+
 encode({event_type_items, EventTypeItems}) ->
     iolist_to_binary(
       mochijson2:encode([{struct, [{'Id', Id},

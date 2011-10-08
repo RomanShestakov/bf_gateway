@@ -10,7 +10,8 @@
 	 getAllEventTypes/2,
 	 getAllMarkets/3,
 	 getBet/3,
-	 getMarket/3
+	 getMarket/3,
+	 getMarketInfo/3
 	]).
 
 -include("../include/BFGlobalService.hrl").
@@ -131,7 +132,8 @@ getAllCurrenciesV2(_GS_Wsdl, _Token) ->
 %% those events had finished.
 %% @end
 %%--------------------------------------------------------------------
--spec getActiveEventTypes(any(), string()) -> {ok, string(), [{integer(), string(), integer(), integer()}]} | {getActiveEventTypes_error, any()}.
+-spec getActiveEventTypes(any(), string()) -> {ok, string(), binary()} | {getActiveEventTypes_error, any(), string()} |
+					      {getActiveEventTypes_unknown_error, any()} | {error, any()}.
 getActiveEventTypes(GS_Wsdl, Token) ->
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }, 'locale' = ?LOCALE},
     try
@@ -146,7 +148,7 @@ getActiveEventTypes(GS_Wsdl, Token) ->
 										 minorErrorCode = MErrCode}}]} ->		
 		case ErrCode == ?GET_EVENTS_ERROR_OK of
 		    true ->  {ok, NewToken, bf_json:encode({event_type_items, EventTypeItems})};
-		    false -> {getActiveEventTypes_error, {ErrCode, MErrCode}}
+		    false -> {getActiveEventTypes_error, {ErrCode, MErrCode}, NewToken}
 		end;
 	    Other -> {getActiveEventTypes_unknown_error, Other}
 	end
@@ -165,7 +167,8 @@ getActiveEventTypes(GS_Wsdl, Token) ->
 %% API programmers to see the range of events that will be available to bet on in the near future.
 %% @end
 %%--------------------------------------------------------------------
--spec getAllEventTypes(any(), string()) -> {ok, string(), [{integer(), string(), integer(), integer()}]} | {getAllEventTypes_error, any()}.
+-spec getAllEventTypes(any(), string()) -> {ok, string(), binary()} | {getAllEventTypes_error, any(), string()} |
+					   {getAllEventTypes_unknown_error, any()} | {error, any()}.
 getAllEventTypes(GS_Wsdl, Token) -> 
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },'locale' = ?LOCALE},
     try
@@ -181,7 +184,7 @@ getAllEventTypes(GS_Wsdl, Token) ->
 		
 		case ErrCode == ?GET_EVENTS_ERROR_OK of
 		    true -> {ok, NewToken, bf_json:encode({event_type_items, EventTypeItems})};
-		    false -> {getAllEventTypes_error, {ErrCode, MErrCode}}
+		    false -> {getAllEventTypes_error, {ErrCode, MErrCode}, NewToken}
 		end;
 	    Other -> {getAllEventTypes_unknown_error, Other}
 	end
@@ -194,7 +197,8 @@ getAllEventTypes(GS_Wsdl, Token) ->
 %% @doc
 %% @end
 %%--------------------------------------------------------------------
--spec getAllMarkets(any(), string(), nil | [integer]) -> {ok, string(), binary()} | no_return().
+-spec getAllMarkets(any(), string(), nil | [integer]) -> {ok, string(), binary()} | {getAllMarkets_error, any(), string()} |
+							 {getAllMarkets_unknown_error, any()} | {error, any()}.
 getAllMarkets(GX_Wsdl, Token, EventTypeId) -> 
     %% set eventTypeId param 
     EventTypeParam = 
@@ -222,7 +226,7 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 		
 		case ErrCode == ?GET_ALL_MARKETS_ERROR_OK of
 		    true ->  {ok, NewToken, bf_json:encode({all_markets, list_to_binary(MarketData)})};
-		    false -> {getAllMarkets_error, {ErrCode, MErrCode}}
+		    false -> {getAllMarkets_error, {ErrCode, MErrCode}, NewToken}
 		end;
 	    Other -> {getAllMarkets_unknown_error, Other}
 	end
@@ -237,8 +241,8 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 %% Each request will retrieve all components of th%% e desired bet.
 %% @end
 %%--------------------------------------------------------------------
--spec getBet(any(), string(), integer()) -> {ok, string(), string()} | {getBet_error, any(), string()} | 
-					    {getBet_unknown_error, any()} | {detergent_call_error, any()}.
+-spec getBet(any(), string(), integer()) -> {ok, string(), binary()} | {getBet_error, any(), string()} | 
+					    {getBet_unknown_error, any()} | {error, any()}.
 getBet(GX_Wsdl, Token, BetId) -> 
     GetBetReq = #'P:GetBetReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 			       'betId' = BetId,
@@ -268,7 +272,8 @@ getBet(GX_Wsdl, Token, BetId) ->
 %% To get a Market ID for the betting market associated with an event you are interested in, use the GetEvents command.
 %% @end
 %%--------------------------------------------------------------------
--spec getMarket(any(), string(), integer()) -> {ok, string(), binary()} | no_return().
+-spec getMarket(any(), string(), integer()) -> {ok, string(), binary()} | {getMarket_error, any(), string()} |
+					       {getMarket_unknown_error, any()} | {error, any()}.
 getMarket(GX_Wsdl, Token, MarketId) -> 
     GetMarketReq = #'P:GetMarketReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 				     'marketId' = MarketId,
@@ -289,6 +294,36 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 		    false -> {getMarket_error, {ErrCode, MErrCode}, NewToken}
 		end;
 	    Other -> {getMarket_unknown_error, Other}
+	end
+    catch
+	Err -> {error, Err}
+    end.	  
+
+
+%%--------------------------------------------------------------------
+%% @doc
+%% @end
+%%--------------------------------------------------------------------
+-spec getMarketInfo(any(), string(), integer()) -> {ok, string(), binary()} | {getMarketInfo_error, any(), string()} |
+					       {getMarketInfo_unknown_error, any()} | {error, any()}.
+getMarketInfo(GX_Wsdl, Token, MarketId) -> 
+    GetMarketInfoReq = #'P:GetMarketInfoReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
+				     'marketId' = MarketId},
+    log4erl:debug("sending getMarketInfo req ~p", [GetMarketInfoReq]),
+    try
+	GetMarketInfoResp = detergent:call(GX_Wsdl, "getMarketInfo", [GetMarketInfoReq]),
+	log4erl:debug("received getMarketInfo resp ~p", [GetMarketInfoResp]),
+	case GetMarketInfoResp of
+	    {ok, _, [#'p:getMarketInfoResponse'{'Result' =
+						#'P:GetMarketInfoResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+								       marketLite = MarketLite,
+								       errorCode = ErrCode,
+								       minorErrorCode = MErrCode}}]} ->
+		case ErrCode == ?GET_MARKET_ERROR_OK of
+		    true ->  {ok, NewToken, bf_json:encode({marketInfo, MarketLite})};
+		    false -> {getMarketInfo_error, {ErrCode, MErrCode}, NewToken}
+		end;
+	    Other -> {getMarketInfo_unknown_error, Other}
 	end
     catch
 	Err -> {error, Err}
