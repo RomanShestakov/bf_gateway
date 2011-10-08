@@ -309,10 +309,10 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 getMarketInfo(GX_Wsdl, Token, MarketId) -> 
     GetMarketInfoReq = #'P:GetMarketInfoReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 				     'marketId' = MarketId},
-    log4erl:debug("sending getMarketInfo req ~p", [GetMarketInfoReq]),
+    %%log4erl:debug("sending getMarketInfo req ~p", [GetMarketInfoReq]),
     try
 	GetMarketInfoResp = detergent:call(GX_Wsdl, "getMarketInfo", [GetMarketInfoReq]),
-	log4erl:debug("received getMarketInfo resp ~p", [GetMarketInfoResp]),
+	%%log4erl:debug("received getMarketInfo resp ~p", [GetMarketInfoResp]),
 	case GetMarketInfoResp of
 	    {ok, _, [#'p:getMarketInfoResponse'{'Result' =
 						#'P:GetMarketInfoResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
