@@ -6,6 +6,7 @@ logs
 /bin/*
 .#*
 *.beam
-/rel/*
 /deps/*
 /doc/*
+rel/betfairgateway
+rel/betfairgateway/*
