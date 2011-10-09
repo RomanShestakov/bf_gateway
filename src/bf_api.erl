@@ -31,7 +31,8 @@
 	 getAllMarkets/3,
 	 getBet/3,
 	 getMarket/3,
-	 getMarketInfo/3
+	 getMarketInfo/3,
+	 getMarketPricesCompressed/3
 	]).
 
 -include("../include/BFGlobalService.hrl").
@@ -41,13 +42,15 @@
 
 -define(LOCALE, "en").
 -define(COUNTRY, "GBR").
+-define(CURRENCY_CODE, "GBP").
 
 %%--------------------------------------------------------------------
 %% @doc
 %% login to betfair
 %% @end
 %%--------------------------------------------------------------------
--spec login(any(), string(), string()) -> {ok, string()} | {login_error, any()}.
+-spec login(any(), string(), string()) -> {ok, string()} | {login_error, any()} |
+					  {login_unknown_error, any()} | {error, any()}.
 login(GS_Wsdl, Username, Password) ->
     LoginReq = #'P:LoginReq'{ username = Username,
 			      password = Password,      
@@ -56,9 +59,9 @@ login(GS_Wsdl, Username, Password) ->
 			      productId = 82,
 			      vendorSoftwareId = 0},
     try
-	%%log4erl:debug("sending login req ~p", [LoginReq]),
+	log4erl:debug("sending login req ~p", [LoginReq]),
 	LoginResp = detergent:call(GS_Wsdl, "login", [LoginReq]),
-	%%log4erl:debug("got login resp ~p", [LoginResp]),
+	log4erl:debug("got login resp ~p", [LoginResp]),
 	case LoginResp of
 	    {ok, _, [#'p:loginResponse'{ 'Result' =
 					     #'P:LoginResp'{header = #'P:APIResponseHeader'{'sessionToken' = Token},
@@ -84,9 +87,9 @@ login(GS_Wsdl, Username, Password) ->
 logout(GS_Wsdl, Token) ->
     LogoutReq = #'P:LogoutReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
     try
-	%%log4erl:debug("sending logout req ~p", [LogoutReq]),
+	log4erl:debug("sending logout req ~p", [LogoutReq]),
 	LogoutResp = detergent:call(GS_Wsdl, "logout", [LogoutReq]),
-	%%log4erl:debug("logout resp ~p", [LogoutResp]),
+	log4erl:debug("logout resp ~p", [LogoutResp]),
 	case LogoutResp of
 	    {ok, _, [#'p:logoutResponse'{'Result' =
 					     #'P:LogoutResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -112,9 +115,8 @@ logout(GS_Wsdl, Token) ->
 keepalive(GS_Wsdl, Token) ->
     KeepAliveReq = #'P:KeepAliveReq'{ 'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }},
     try
-	%%log4erl:info("sending keepAlive ..."),
 	KeepAliveResp = detergent:call(GS_Wsdl, "keepAlive", [KeepAliveReq]),
-	%%log4erl:debug("keepalive resp ~p", [KeepAliveResp]),
+	log4erl:debug("keepalive resp ~p", [KeepAliveResp]),
 	case KeepAliveResp of
 	    {ok, _, [#'p:keepAliveResponse'{'Result' =
 						#'P:KeepAliveResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -157,9 +159,9 @@ getAllCurrenciesV2(_GS_Wsdl, _Token) ->
 getActiveEventTypes(GS_Wsdl, Token) ->
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" }, 'locale' = ?LOCALE},
     try
-	%%log4erl:debug("sending getActiveEventTypes ~p", [GetActiveEventTypesReq]),
+	log4erl:debug("sending getActiveEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getActiveEventTypes", [GetActiveEventTypesReq]),
-	%%log4erl:debug("getActiveEventTypes resp ~p", [GetEventTypesResp]),
+	log4erl:debug("getActiveEventTypes resp ~p", [GetEventTypesResp]),
 	case GetEventTypesResp of
 	    {ok, _, [#'p:getActiveEventTypesResponse'{'Result' =
 							  #'P:GetEventTypesResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -192,9 +194,9 @@ getActiveEventTypes(GS_Wsdl, Token) ->
 getAllEventTypes(GS_Wsdl, Token) -> 
     GetActiveEventTypesReq = #'P:GetEventTypesReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },'locale' = ?LOCALE},
     try
-	%%log4erl:debug("sending getAllEventTypes ~p", [GetActiveEventTypesReq]),
+	log4erl:debug("sending getAllEventTypes ~p", [GetActiveEventTypesReq]),
 	GetEventTypesResp = detergent:call(GS_Wsdl, "getAllEventTypes", [GetActiveEventTypesReq]),
-	%%log4erl:debug("getAllEventTypes resp ~p", [GetEventTypesResp]),
+	log4erl:debug("getAllEventTypes resp ~p", [GetEventTypesResp]),
 	case GetEventTypesResp of
 	    {ok, _, [#'p:getAllEventTypesResponse'{'Result' =
 						       #'P:GetEventTypesResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -232,11 +234,12 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
   					     'eventTypeIds' = EventTypeParam,
   					     'countries' = #'P:ArrayOfCountryCode'{'Country' = [?COUNTRY]},
   					     'fromDate' = nil,
-  					     'toDate' = nil},
-    %%log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
+ 					     'toDate' = nil
+					    },
     try
+	log4erl:debug("sending getAllMarkets req ~p", [GetAllMarketsReq]),
 	GetAllMarketsResp = detergent:call(GX_Wsdl, "getAllMarkets", [GetAllMarketsReq]),
-	%%log4erl:debug("getAllMarkets resp ~p", [GetAllMarketsResp]),
+	log4erl:debug("getAllMarkets resp ~p", [GetAllMarketsResp]),
 	case GetAllMarketsResp of
 	    {ok, _, [#'p:getAllMarketsResponse'{'Result' =
 						    #'P:GetAllMarketsResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -267,10 +270,10 @@ getBet(GX_Wsdl, Token, BetId) ->
     GetBetReq = #'P:GetBetReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 			       'betId' = BetId,
 			       'locale' = ?LOCALE},
-    %%log4erl:debug("sending getBet req ~p", [GetBetReq]),
     try
+	log4erl:debug("sending getBet req ~p", [GetBetReq]),
 	GetBetResp = detergent:call(GX_Wsdl, "getBet", [GetBetReq]),
-	%%log4erl:debug("received getBet resp ~p", [GetBetResp]),
+	log4erl:debug("received getBet resp ~p", [GetBetResp]),
 	case GetBetResp of
 	    {ok, _, [#'p:getBetResponse'{'Result' =
 					     #'P:GetBetResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -299,10 +302,10 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 				     'marketId' = MarketId,
 				     'includeCouponLinks' = false,
 				     'locale' = ?LOCALE},
-    %%log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
     try
+	log4erl:debug("sending getMarket req ~p", [GetMarketReq]),
 	GetMarketResp = detergent:call(GX_Wsdl, "getMarket", [GetMarketReq]),
-	%%log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
+	log4erl:debug("received getMarket resp ~p", [GetMarketResp]),
 	case GetMarketResp of
 	    {ok, _, [#'p:getMarketResponse'{'Result' =
 						#'P:GetMarketResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -322,6 +325,9 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 
 %%--------------------------------------------------------------------
 %% @doc
+%% The API GetMarketInfo service allows you to input a Market ID and retrieve market data for the market requested.
+%% To get a Market ID for the betting market associated with an event you are interested in, use the GetEvents command.
+%% This is a lite service to compliment the GetMarket service.
 %% @end
 %%--------------------------------------------------------------------
 -spec getMarketInfo(any(), string(), integer()) -> {ok, string(), binary()} | {getMarketInfo_error, any(), string()} |
@@ -329,10 +335,10 @@ getMarket(GX_Wsdl, Token, MarketId) ->
 getMarketInfo(GX_Wsdl, Token, MarketId) -> 
     GetMarketInfoReq = #'P:GetMarketInfoReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 				     'marketId' = MarketId},
-    %%log4erl:debug("sending getMarketInfo req ~p", [GetMarketInfoReq]),
     try
+	log4erl:debug("sending getMarketInfo req ~p", [GetMarketInfoReq]),
 	GetMarketInfoResp = detergent:call(GX_Wsdl, "getMarketInfo", [GetMarketInfoReq]),
-	%%log4erl:debug("received getMarketInfo resp ~p", [GetMarketInfoResp]),
+	log4erl:debug("received getMarketInfo resp ~p", [GetMarketInfoResp]),
 	case GetMarketInfoResp of
 	    {ok, _, [#'p:getMarketInfoResponse'{'Result' =
 						#'P:GetMarketInfoResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
@@ -349,3 +355,33 @@ getMarketInfo(GX_Wsdl, Token, MarketId) ->
 	Err -> {error, Err}
     end.	  
 
+
+%%--------------------------------------------------------------------
+%% @doc
+%% @end
+%%--------------------------------------------------------------------
+%%-spec
+getMarketPricesCompressed(GX_Wsdl, Token, MarketId) -> 
+    GetMarketPricesCompressedReq = 
+	#'P:GetMarketPricesCompressedReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
+					  'currencyCode' = ?CURRENCY_CODE,
+					  'marketId' = MarketId},
+    try
+	log4erl:debug("sending getMarketPricesCompressed req ~p", [GetMarketPricesCompressedReq]),
+	GetMarketPricesCompressedResp = detergent:call(GX_Wsdl, "getMarketPricesCompressed", [GetMarketPricesCompressedReq]),
+	log4erl:debug("received getMarketPricesCompressed resp ~p", [GetMarketPricesCompressedResp]),
+	case GetMarketPricesCompressedResp of
+	    {ok, _, [#'p:getMarketPricesCompressedResponse'{
+			'Result' = #'P:GetMarketPricesCompressedResp'{header = #'P:APIResponseHeader'{sessionToken = NewToken},
+								      marketPrices = MarketPrices,
+								      errorCode = ErrCode,
+								      minorErrorCode = MErrCode}}]} ->
+		case ErrCode == ?GET_MARKET_PRICES_ERROR_OK of
+		    true ->  {ok, NewToken, bf_json:encode({marketPrices, MarketPrices})};
+		    false -> {getMarketPricesCompressed_error, {ErrCode, MErrCode}, NewToken}
+		end;
+	    Other -> {getMarketPricesCompressed_unknown_error, Other}
+	end
+    catch
+	Err -> {error, Err}
+    end.

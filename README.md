@@ -6,7 +6,7 @@ eventually, this application should be able to accept subsribe requests and pull
 
 ## Dependencies
 
-1. Erlsom for XML parsing (there are couple of problems with the original version of erlsom, raised issues to the owner of project. for now need to use fork in git@github.com:RomanShestakov/erlsom.git)
+1. Erlsom for XML parsing
 2. Detergent for SOAP interactions
 3. log4erl for logging
 4. mochiweb for json parsing
@@ -58,15 +58,6 @@ Wsdl2 = detergent:initModel("file://../priv/BFExchangeService.wsdl").
 #detergent:write_hrl(Wsdl2, "BFExchangeService.hrl").
 detergent:write_hrl("file://./priv/BFGlobalService.wsdl", "BFGlobalService.hrl", "BFG").
 detergent:write_hrl("file://./priv/BFExchangeService.wsdl", "BFExchangeService.hrl", "BFE").
-
-# because of some issues in the original version of erlsom need to edit erlsom_parse.erl, comment out
-%% case TypeDef#type.nillable of
-%% 	    true ->
-%% 	      ok;
-%% 	    Err1 ->
-%%               throw({error, "Unexpected attribute: " ++ LocalName, TypeDef, Err1})
-%% 	  end;
-
 
 ## Testing
 

@@ -127,7 +127,7 @@ encode({event_type_items, EventTypeItems}) ->
 									      'nextMarketId' = MarketId,
 									      'exchangeId' = ExchId} <- EventTypeItems]));
 encode({all_markets, Bin}) ->
-    L = encode(Bin, [], [], []),
+    L = parseMarkets(Bin, [], [], []),
     iolist_to_binary(
       mochijson2:encode([{struct, [{'MarketId', list_to_integer(MarketId)},
 				   {'MarketName', list_to_binary(MarketName)},
@@ -148,6 +148,31 @@ encode({all_markets, Bin}) ->
 			    [MarketId, MarketName, MarketType, MarketStatus, EventDate, MenuPath, EventHierarchy,
 			     BetDelay, ExchangeId, ISO3CountryCode, LastRefresh, NumberOfRunners, NumberOfWinners,
 			     TotalAmountMatched, BSPMarket, TurningIntoPlay] <- L ]));
+
+
+
+encode({market_price, Bin}) ->
+    parseMarketPrices(Bin, [], [], []);
+%%     iolist_to_binary(
+%%       mochijson2:encode([{struct, [{'MarketId', list_to_integer(MarketId)},
+%% 				   {'MarketName', list_to_binary(MarketName)},
+%% 				   {'MarketType', list_to_binary(MarketType)},
+%% 				   {'MarketStatus', list_to_binary(MarketStatus)},
+%% 				   {'EventDate', list_to_binary(EventDate)},
+%% 				   {'MenuPath', list_to_binary(MenuPath)},
+%% 				   {'EventHierarchy', list_to_binary(EventHierarchy)},
+%% 				   {'BetDelay', list_to_binary(BetDelay)},
+%% 				   {'ExchangeId', list_to_integer(ExchangeId)},
+%% 				   {'CountryISO3', list_to_binary(ISO3CountryCode)},
+%% 				   {'LastRefresh', list_to_binary(LastRefresh)},
+%% 				   {'NumberOfRunners', list_to_integer(NumberOfRunners)},
+%% 				   {'NumberOfWinners', list_to_integer(NumberOfWinners)},
+%% 				   {'TotalAmountMatched', list_to_float(TotalAmountMatched)},
+%% 				   {'BspMarket', list_to_binary(BSPMarket)},
+%% 				   {'TurningIntoPlay', list_to_binary(TurningIntoPlay)}]} ||
+%% 			    [MarketId, MarketName, MarketType, MarketStatus, EventDate, MenuPath, EventHierarchy,
+%% 			     BetDelay, ExchangeId, ISO3CountryCode, LastRefresh, NumberOfRunners, NumberOfWinners,
+%% 			     TotalAmountMatched, BSPMarket, TurningIntoPlay] <- L ]));
 
 
 
@@ -182,8 +207,6 @@ encode({bet, #'P:Bet'{'asianLineId' = AsianLineId,
 		      %%'voidedDate' = voidedDate,
 		      'handicap' = Handicap}}) ->     
     try
-
-	io:format("matches ~p~n", [Matches]),
 	iolist_to_binary(
 	  mochijson2:encode({struct, [{'asianLineId', AsianLineId},
 				      {'avgPrice', list_to_float(AvgPrice)},
@@ -220,40 +243,41 @@ encode({bet, #'P:Bet'{'asianLineId' = AsianLineId,
 
 
 
+
 encode(Other) ->
     throw({bf_json_error, {unknown_value, Other}}).
     %%Other.
 
 
 
-encode(<<":", Rest/binary>>, Field, Line, Acc) ->
-    encode(Rest, [], [], [lists:reverse([lists:reverse(Field) | Line]) | Acc]);
-%% encode(<<"\\:", Rest/binary>>, Field, Line, Acc) ->
-%%     encode(Rest, [":" | Field], Line, Acc);
-%% encode(<<"\\", Rest/binary>>, Field, Line, Acc) ->
-%%     encode(Rest, [], [lists:reverse(Field) | Line], Acc);
-encode(<<"~", Rest/binary>>, Field, Line, Acc) ->
-    encode(Rest, [], [lists:reverse(Field) | Line], Acc);
-encode(<<Char, Rest/binary>>, Field, Line, Acc) ->
-    encode(Rest, [Char | Field], Line, Acc);
-encode(<<>>, Field, Line, Acc) ->
+%% Helper functions
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Parse binary string for Markets 
+%% @end
+%%--------------------------------------------------------------------
+parseMarkets(<<":", Rest/binary>>, Field, Line, Acc) ->
+    parseMarkets(Rest, [], [], [lists:reverse([lists:reverse(Field) | Line]) | Acc]);
+%% parseMarkets(<<"\\:", Rest/binary>>, Field, Line, Acc) ->
+%%     parseMarkets(Rest, [":" | Field], Line, Acc);
+%% parseMarkets(<<"\\", Rest/binary>>, Field, Line, Acc) ->
+%%     parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
+parseMarkets(<<"~", Rest/binary>>, Field, Line, Acc) ->
+    parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
+parseMarkets(<<Char, Rest/binary>>, Field, Line, Acc) ->
+    parseMarkets(Rest, [Char | Field], Line, Acc);
+parseMarkets(<<>>, Field, Line, Acc) ->
     lists:delete([[]], lists:reverse([lists:reverse([lists:reverse(Field) | Line]) | Acc])).
 
-
-runners([], R) ->
-    io:format("R ~p~n", [R]),
-    R;
+runners([], R) -> R;
 runners([ #'P:Runner'{'asianLineId' = AsianLineId, 'handicap' = Handicap, 'name' = Name, 'selectionId' = SelectionId} | T], R) ->
     runners(T, [{struct,[{'asianLineId', AsianLineId},
 			 {'handicap', list_to_binary(Handicap)},
 			 {'name', list_to_binary(Name)},
-			 {'selectionId', SelectionId}]} | R]);
-runners(Other, []) ->
-    io:format("match ~p~n", [Other]).
-
+			 {'selectionId', SelectionId}]} | R]).
 
 eventId(#'P:ArrayOfEventId'{'EventId' = EventId}) -> EventId.
-
 
 matches([], M) -> M;
 matches([#'P:Match'{'betStatus' = BetStatus,
@@ -276,3 +300,20 @@ matches([#'P:Match'{'betStatus' = BetStatus,
 			 ]} | M]).
 
 
+
+%% parseMarketPrices(<<":", Rest/binary>>, Field, Line, Acc) ->
+%%     parseMarkets(Rest, [], [], [lists:reverse([lists:reverse(Field) | Line]) | Acc]);
+%% %% parseMarkets(<<"\\:", Rest/binary>>, Field, Line, Acc) ->
+%% %%     parseMarkets(Rest, [":" | Field], Line, Acc);
+%% %% parseMarkets(<<"\\", Rest/binary>>, Field, Line, Acc) ->
+%% %%     parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
+%% parseMarkets(<<"~", Rest/binary>>, Field, Line, Acc) ->
+%%     parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
+%% parseMarkets(<<Char, Rest/binary>>, Field, Line, Acc) ->
+%%     parseMarkets(Rest, [Char | Field], Line, Acc);
+%% parseMarkets(<<>>, Field, Line, Acc) ->
+%%     lists:delete([[]], lists:reverse([lists:reverse([lists:reverse(Field) | Line]) | Acc])).
+
+
+parseMarketPrices(Other, _Field, _Line, _Acc) ->
+    Other.

@@ -35,6 +35,7 @@
     %% to start manually from console with start.sh
 start() ->
     ssl:start(),
+    io:format("~p~n", [ssl]),
     [begin application:start(A), io:format("~p~n", [A]) end || A <- ?APPS].
 
 start(_StartType, _StartArgs) ->

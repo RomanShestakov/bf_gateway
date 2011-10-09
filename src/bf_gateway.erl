@@ -34,7 +34,8 @@
 	 getAllMarkets/1,
 	 getMarket/1,
 	 getBet/1,
-	 getMarketInfo/1
+	 getMarketInfo/1,
+	 getMarketPricesCompressed/1
 	]).
 
 %% gen_server callbacks
@@ -75,7 +76,7 @@ getAllMarkets() ->
     getAllMarkets(nil).
 
 getAllMarkets(MarketTypeId) ->
-    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}). %%, infinity).
+    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}, infinity). %%, infinity).
 
 getMarket(MarketId) ->
     gen_server:call(?SERVER, {getMarket, MarketId}). %%, infinity).
@@ -86,6 +87,9 @@ getBet(BetId) ->
 getMarketInfo(MarketId) ->
     gen_server:call(?SERVER, {getMarketInfo, MarketId}). %%, infinity).
     
+getMarketPricesCompressed(MarketId) ->
+    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId}). %%, infinity).
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -118,6 +122,8 @@ init([]) ->
     GS_Wsdl = detergent:initModel(get_GS_Wsdl()),
     GX_Wsdl = detergent:initModel(get_GX_Wsdl()),
     %% login to betfair
+    log4erl:info("logging to betfair..."),
+    %% at this point the message loop is not started yet, so we call bf_api:login directly
     case bf_api:login(GS_Wsdl, get_username(), get_password()) of
 	{ok, Token} ->
 	    log4erl:info("succesfully logged to betfair"),
@@ -147,7 +153,7 @@ init([]) ->
 handle_call({login, Username, Password}, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
     case bf_api:login(GS_Wsdl, Username, Password) of
 	{ok, NewToken} ->
-	    io:format("succesfully logged to betfair"), 
+	    log4erl:info("succesfully logged to betfair"), 
 	    {reply, ok, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error logging to betfair ~p", [Err]),
@@ -156,8 +162,7 @@ handle_call({login, Username, Password}, _From, #state{gs_wsdl = GS_Wsdl, token 
 handle_call(logout, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = State) ->
     case bf_api:logout(GS_Wsdl, Token) of
 	{ok, NewToken} -> 
-	    %%log4erl:info("succesfully logged out from betfair"),
-	    io:format("succesfully logged out from betfair"),
+	    log4erl:info("succesfully logged out from betfair"),
 	    {reply, ok, State#state{token = NewToken}};
 	Err ->
 	    log4erl:error("error logging out from betfair ~p", [Err]),
@@ -235,6 +240,17 @@ handle_call({getBet, BetId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = S
  	    {reply, Err, State#state{token = NToken}};
 	{Other, Reason} ->
 	    log4erl:error("~p error in getBet call ~p", [Other, Reason]),
+ 	    {reply, Reason, State#state{token = Token}}
+    end;
+handle_call({getMarketPricesCompressed, MarketId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    case bf_api:getMarketPricesCompressed(GX_Wsdl, Token, MarketId) of
+	{ok, NewToken, MarketPrices} ->
+	    {reply, MarketPrices, State#state{token = NewToken}};
+	{getMarketPricesCompressed_error, Err, NToken} ->
+	    log4erl:error("error in getMarketPricesCompressed call ~p", [Err]),
+ 	    {reply, Err, State#state{token = NToken}};
+	{Other, Reason} ->
+	    log4erl:error("~p error in getMarketPricesCompressed call ~p", [Other, Reason]),
  	    {reply, Reason, State#state{token = Token}}
     end;
 handle_call(_Request, _From, State) ->
