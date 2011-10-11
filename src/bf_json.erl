@@ -150,33 +150,40 @@ encode({all_markets, Bin}) ->
 			     TotalAmountMatched, BSPMarket, TurningIntoPlay] <- L ]));
 
 
+encode({marketPrices, Bin}) ->
+    Bin;
 
-encode({market_price, Bin}) ->
-    parseMarketPrices(Bin, [], [], []);
+%% encode({marketPrices, Bin}) ->
+%%  %%   L = parseMarketPrices(Bin, [], []),
+%%      io:format("in ~p~n", [Bin]),
+
+%%     [MarketId,
+%%      Currency, 
+%%      MarketStatus,
+%%      InPlayDelay,
+%%      NumberOfWinners,
+%%      MarketInfo,
+%%      DiscountAllowed,
+%%      MarketBaseRate,
+%%      RefreshTime,
+%%      _RemovedRunners %% todo
+     
+%%      | _T] = L = parseMarketPrices(Bin, [], []), 
+
+
+%%     io:format("out ~p~n", [L]),
+
 %%     iolist_to_binary(
-%%       mochijson2:encode([{struct, [{'MarketId', list_to_integer(MarketId)},
-%% 				   {'MarketName', list_to_binary(MarketName)},
-%% 				   {'MarketType', list_to_binary(MarketType)},
-%% 				   {'MarketStatus', list_to_binary(MarketStatus)},
-%% 				   {'EventDate', list_to_binary(EventDate)},
-%% 				   {'MenuPath', list_to_binary(MenuPath)},
-%% 				   {'EventHierarchy', list_to_binary(EventHierarchy)},
-%% 				   {'BetDelay', list_to_binary(BetDelay)},
-%% 				   {'ExchangeId', list_to_integer(ExchangeId)},
-%% 				   {'CountryISO3', list_to_binary(ISO3CountryCode)},
-%% 				   {'LastRefresh', list_to_binary(LastRefresh)},
-%% 				   {'NumberOfRunners', list_to_integer(NumberOfRunners)},
-%% 				   {'NumberOfWinners', list_to_integer(NumberOfWinners)},
-%% 				   {'TotalAmountMatched', list_to_float(TotalAmountMatched)},
-%% 				   {'BspMarket', list_to_binary(BSPMarket)},
-%% 				   {'TurningIntoPlay', list_to_binary(TurningIntoPlay)}]} ||
-%% 			    [MarketId, MarketName, MarketType, MarketStatus, EventDate, MenuPath, EventHierarchy,
-%% 			     BetDelay, ExchangeId, ISO3CountryCode, LastRefresh, NumberOfRunners, NumberOfWinners,
-%% 			     TotalAmountMatched, BSPMarket, TurningIntoPlay] <- L ]));
-
-
-
-
+%%       mochijson2:encode({struct, [{'MarketId', list_to_integer(MarketId)},
+%% 				  {'Currency', list_to_binary(Currency)},
+%% 				  {'MarketStatus', list_to_binary(MarketStatus)},
+%% 				  {'InPlayDelay', list_to_integer(InPlayDelay)},
+%% 				  {'NumberOfWinners', list_to_integer(NumberOfWinners)},
+%% 				  {'MarketInfo', list_to_binary(MarketInfo)},
+%% 				  {'DiscountAllowed', list_to_atom(DiscountAllowed)},
+%% 				  {'MarketBaseRate', list_to_binary(MarketBaseRate)},
+%% 				  {'RefreshTime', list_to_integer(RefreshTime)}
+%% 				 ]}));
 
 encode({bet, #'P:Bet'{'asianLineId' = AsianLineId,
 		      'avgPrice' = AvgPrice,
@@ -303,17 +310,20 @@ matches([#'P:Match'{'betStatus' = BetStatus,
 
 %% parseMarketPrices(<<":", Rest/binary>>, Field, Line, Acc) ->
 %%     parseMarkets(Rest, [], [], [lists:reverse([lists:reverse(Field) | Line]) | Acc]);
-%% %% parseMarkets(<<"\\:", Rest/binary>>, Field, Line, Acc) ->
-%% %%     parseMarkets(Rest, [":" | Field], Line, Acc);
-%% %% parseMarkets(<<"\\", Rest/binary>>, Field, Line, Acc) ->
-%% %%     parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
-%% parseMarkets(<<"~", Rest/binary>>, Field, Line, Acc) ->
+%% parseMarkets(<<"\\:", Rest/binary>>, Field, Line, Acc) ->
+%%     parseMarkets(Rest, [":" | Field], Line, Acc);
+%% parseMarkets(<<"\\", Rest/binary>>, Field, Line, Acc) ->
 %%     parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
-%% parseMarkets(<<Char, Rest/binary>>, Field, Line, Acc) ->
-%%     parseMarkets(Rest, [Char | Field], Line, Acc);
-%% parseMarkets(<<>>, Field, Line, Acc) ->
-%%     lists:delete([[]], lists:reverse([lists:reverse([lists:reverse(Field) | Line]) | Acc])).
+parseMarketPrices(<<"~", Rest/binary>>, Field, Line) ->
+    parseMarketPrices(Rest, [], [lists:reverse(Field) | Line]);
+parseMarketPrices(<<":", Rest/binary>>, Field, Line) ->
+    parseMarketPrices(Rest, [], [lists:reverse(Field) | Line]);
+
+parseMarketPrices(<<Char, Rest/binary>>, Field, Line) ->
+    parseMarketPrices(Rest, [Char | Field], Line);
+parseMarketPrices(<<>>, Field, Line) ->
+    lists:reverse([lists:reverse(Field) | Line]).
 
 
-parseMarketPrices(Other, _Field, _Line, _Acc) ->
-    Other.
+%% parseMarketPrices(Other, _Field, _Line, _Acc) ->
+%%     Other.
