@@ -1677,8 +1677,7 @@ No exclusion or limitation set out in this Agreement shall apply in the case of 
         <xsd:complexContent>
           <xsd:extension base="types:APIRequest">
             <xsd:sequence>
-<!--               <xsd:element name="betId" nillable="false" type="xsd:long"/> -->
-              <xsd:element name="betId" nillable="false" type="xsd:int"/>
+              <xsd:element name="betId" nillable="false" type="xsd:long"/>
               <xsd:element name="locale" nillable="true" type="xsd:string"/>
             </xsd:sequence>
           </xsd:extension>

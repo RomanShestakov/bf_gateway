@@ -267,8 +267,10 @@ getAllMarkets(GX_Wsdl, Token, EventTypeId) ->
 -spec getBet(any(), string(), integer()) -> {ok, string(), binary()} | {getBet_error, any(), string()} | 
 					    {getBet_unknown_error, any()} | {error, any()}.
 getBet(GX_Wsdl, Token, BetId) -> 
-    GetBetReq = #'P:GetBetReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
-			       'betId' = BetId,
+    GetBetReq = #'P:GetBetReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0"},
+			       %% because erlsom needs string types for values which are not integer or boolean, convert BetId to list
+			       %% https://github.com/willemdj/erlsom/issues/6#issuecomment-2346555
+			       'betId' = integer_to_list(BetId), 
 			       'locale' = ?LOCALE},
     try
 	log4erl:debug("sending getBet req ~p", [GetBetReq]),
@@ -377,7 +379,7 @@ getMarketPricesCompressed(GX_Wsdl, Token, MarketId) ->
 								      errorCode = ErrCode,
 								      minorErrorCode = MErrCode}}]} ->
 		case ErrCode == ?GET_MARKET_PRICES_ERROR_OK of
-		    true ->  {ok, NewToken, bf_json:encode({marketPrices, MarketPrices})};
+		    true ->  {ok, NewToken, bf_json:encode({marketPrices, list_to_binary(MarketPrices)})};
 		    false -> {getMarketPricesCompressed_error, {ErrCode, MErrCode}, NewToken}
 		end;
 	    Other -> {getMarketPricesCompressed_unknown_error, Other}
