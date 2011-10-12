@@ -150,28 +150,25 @@ encode({all_markets, Bin}) ->
 			     TotalAmountMatched, BSPMarket, TurningIntoPlay] <- L ]));
 
 
-encode({marketPrices, Bin}) ->
-    Bin;
-
+%% %%bf_json:encode({marketPrices, MP}).
 %% encode({marketPrices, Bin}) ->
-%%  %%   L = parseMarketPrices(Bin, [], []),
-%%      io:format("in ~p~n", [Bin]),
 
-%%     [MarketId,
-%%      Currency, 
-%%      MarketStatus,
-%%      InPlayDelay,
-%%      NumberOfWinners,
-%%      MarketInfo,
-%%      DiscountAllowed,
-%%      MarketBaseRate,
-%%      RefreshTime,
-%%      _RemovedRunners %% todo
-     
-%%      | _T] = L = parseMarketPrices(Bin, [], []), 
-
-
-%%     io:format("out ~p~n", [L]),
+encode({marketPrices, Bin}) ->
+ %%   L = parseMarketPrices(Bin, [], []),
+     io:format("in ~p~n", [Bin]),
+    [MarketId,
+     Currency, 
+     MarketStatus,
+     InPlayDelay,
+     NumberOfWinners,
+     MarketInfo,
+     DiscountAllowed,
+     MarketBaseRate,
+     RefreshTime,
+     _RemovedRunners %% todo
+    
+     | _T] = L = parseMarketPrices(Bin), 
+    io:format("out ~p~n", [L]);
 
 %%     iolist_to_binary(
 %%       mochijson2:encode({struct, [{'MarketId', list_to_integer(MarketId)},
@@ -308,21 +305,19 @@ matches([#'P:Match'{'betStatus' = BetStatus,
 
 
 
-%% parseMarketPrices(<<":", Rest/binary>>, Field, Line, Acc) ->
-%%     parseMarkets(Rest, [], [], [lists:reverse([lists:reverse(Field) | Line]) | Acc]);
-%% parseMarkets(<<"\\:", Rest/binary>>, Field, Line, Acc) ->
-%%     parseMarkets(Rest, [":" | Field], Line, Acc);
-%% parseMarkets(<<"\\", Rest/binary>>, Field, Line, Acc) ->
-%%     parseMarkets(Rest, [], [lists:reverse(Field) | Line], Acc);
-parseMarketPrices(<<"~", Rest/binary>>, Field, Line) ->
-    parseMarketPrices(Rest, [], [lists:reverse(Field) | Line]);
-parseMarketPrices(<<":", Rest/binary>>, Field, Line) ->
-    parseMarketPrices(Rest, [], [lists:reverse(Field) | Line]);
+parseMarketPrices(Bin) ->
+    parseMarketPrices(Bin, [], [], [], []).
 
-parseMarketPrices(<<Char, Rest/binary>>, Field, Line) ->
-    parseMarketPrices(Rest, [Char | Field], Line);
-parseMarketPrices(<<>>, Field, Line) ->
-    lists:reverse([lists:reverse(Field) | Line]).
+parseMarketPrices(<<"~", Rest/binary>>, Field, Line, Lines, Acc) ->
+    parseMarketPrices(Rest, [], [lists:reverse(Field) | Line], Lines, Acc);
+parseMarketPrices(<<":", Rest/binary>>, Field, Line, Lines, Acc) ->
+    parseMarketPrices(Rest, [], [], [], [lists:reverse([lists:reverse([lists:reverse(Field) | Line]) | Lines]) | Acc]);
+parseMarketPrices(<<"|", Rest/binary>>, Field, Line, Lines, Acc) ->
+    parseMarketPrices(Rest, [], [], [lists:reverse([lists:reverse(Field) | Line]) | Lines], Acc);
+parseMarketPrices(<<Char, Rest/binary>>, Field, Line, Lines, Acc) ->
+    parseMarketPrices(Rest, [Char | Field], Line, Lines, Acc);
+parseMarketPrices(<<>>, Field, Line, Lines, Acc) ->
+    lists:reverse([[lists:reverse([lists:reverse(Field) | Line]) | Lines] | Acc]).
 
 
 %% parseMarketPrices(Other, _Field, _Line, _Acc) ->
