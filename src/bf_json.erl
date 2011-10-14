@@ -20,6 +20,8 @@
 
 -module(bf_json).
 
+%-compile(export_all).
+
 -export([encode/1]).
 
 -include("../include/BFGlobalService.hrl").
@@ -154,33 +156,30 @@ encode({all_markets, Bin}) ->
 %% encode({marketPrices, Bin}) ->
 
 encode({marketPrices, Bin}) ->
- %%   L = parseMarketPrices(Bin, [], []),
-     io:format("in ~p~n", [Bin]),
-    [MarketId,
-     Currency, 
-     MarketStatus,
-     InPlayDelay,
-     NumberOfWinners,
-     MarketInfo,
-     DiscountAllowed,
-     MarketBaseRate,
-     RefreshTime,
-     _RemovedRunners %% todo
-    
-     | _T] = L = parseMarketPrices(Bin), 
-    io:format("out ~p~n", [L]);
-
-%%     iolist_to_binary(
-%%       mochijson2:encode({struct, [{'MarketId', list_to_integer(MarketId)},
-%% 				  {'Currency', list_to_binary(Currency)},
-%% 				  {'MarketStatus', list_to_binary(MarketStatus)},
-%% 				  {'InPlayDelay', list_to_integer(InPlayDelay)},
-%% 				  {'NumberOfWinners', list_to_integer(NumberOfWinners)},
-%% 				  {'MarketInfo', list_to_binary(MarketInfo)},
-%% 				  {'DiscountAllowed', list_to_atom(DiscountAllowed)},
-%% 				  {'MarketBaseRate', list_to_binary(MarketBaseRate)},
-%% 				  {'RefreshTime', list_to_integer(RefreshTime)}
-%% 				 ]}));
+    [[[MarketId,
+       Currency, 
+       MarketStatus,
+       InPlayDelay,
+       NumberOfWinners,
+       MarketInfo,
+       DiscountAllowed,
+       MarketBaseRate,
+       RefreshTime,
+       _RemovedRunners, %% TODO - parse removed runners
+       BSPMarket  | _N]] | T] = parseMarketPrices(Bin), 
+    iolist_to_binary(
+      mochijson2:encode({struct, [{'MarketId', list_to_integer(MarketId)},
+				  {'Currency', list_to_binary(Currency)},
+				  {'MarketStatus', list_to_binary(MarketStatus)},
+				  {'InPlayDelay', list_to_integer(InPlayDelay)},
+				  {'NumberOfWinners', list_to_integer(NumberOfWinners)},
+				  {'MarketInfo', list_to_binary(MarketInfo)},
+				  {'DiscountAllowed', list_to_atom(DiscountAllowed)},
+				  {'MarketBaseRate', list_to_binary(MarketBaseRate)},
+				  {'RefreshTime', list_to_integer(RefreshTime)},
+				  {'BSPMarket', list_to_binary(BSPMarket)},
+				  {'RunnersInfo', parseRunners(T, [])}
+				 ]}));
 
 encode({bet, #'P:Bet'{'asianLineId' = AsianLineId,
 		      'avgPrice' = AvgPrice,
@@ -304,10 +303,8 @@ matches([#'P:Match'{'betStatus' = BetStatus,
 			 ]} | M]).
 
 
-
 parseMarketPrices(Bin) ->
     parseMarketPrices(Bin, [], [], [], []).
-
 parseMarketPrices(<<"~", Rest/binary>>, Field, Line, Lines, Acc) ->
     parseMarketPrices(Rest, [], [lists:reverse(Field) | Line], Lines, Acc);
 parseMarketPrices(<<":", Rest/binary>>, Field, Line, Lines, Acc) ->
@@ -317,8 +314,27 @@ parseMarketPrices(<<"|", Rest/binary>>, Field, Line, Lines, Acc) ->
 parseMarketPrices(<<Char, Rest/binary>>, Field, Line, Lines, Acc) ->
     parseMarketPrices(Rest, [Char | Field], Line, Lines, Acc);
 parseMarketPrices(<<>>, Field, Line, Lines, Acc) ->
-    lists:reverse([[lists:reverse([lists:reverse(Field) | Line]) | Lines] | Acc]).
+    lists:reverse([lists:reverse([lists:reverse([lists:reverse(Field) | Line]) | Lines]) | Acc]).
 
 
-%% parseMarketPrices(Other, _Field, _Line, _Acc) ->
-%%     Other.
+parseRunners([], Acc ) ->  Acc;
+parseRunners([[[SelectionId,
+	       OrderIndex,
+	       TotalAmountMatched,
+	       LastPriceMatched,
+	       Handicap,
+	       ReductionFactor,
+	       Vacant,
+	       FarSPPrice,
+	       NearSPPrice,
+	       ActualSPPrice | _N] | _K] | T], Acc) ->
+    parseRunners(T, [{struct, [ {'SelectionId', list_to_integer(SelectionId)},
+				{'OrderIndex', list_to_integer(OrderIndex)},
+				{'TotalAmountMatched', list_to_binary(TotalAmountMatched)}, 
+				{'LastPriceMatched', list_to_binary(LastPriceMatched)},
+				{'Handicap', list_to_binary(Handicap)},
+				{'ReductionFactor', list_to_binary(ReductionFactor)},
+				{'Vacant', list_to_atom(Vacant)},
+				{'FarSPPrice', list_to_binary(FarSPPrice)},
+				{'NearSPPrice', list_to_binary(NearSPPrice)},
+				{'ActualSPPrice', list_to_binary(ActualSPPrice)}]} | Acc]).
