@@ -20,7 +20,7 @@
 
 -module(bf_json).
 
-%-compile(export_all).
+-compile(export_all).
 
 -export([encode/1]).
 
@@ -327,7 +327,8 @@ parseRunners([[[SelectionId,
 	       Vacant,
 	       FarSPPrice,
 	       NearSPPrice,
-	       ActualSPPrice | _N] | _K] | T], Acc) ->
+	       ActualSPPrice | _N] | Prices] | T], Acc) ->
+    %io:format("prices ~p~n", [Prices]),
     parseRunners(T, [{struct, [ {'SelectionId', list_to_integer(SelectionId)},
 				{'OrderIndex', list_to_integer(OrderIndex)},
 				{'TotalAmountMatched', list_to_binary(TotalAmountMatched)}, 
@@ -337,4 +338,22 @@ parseRunners([[[SelectionId,
 				{'Vacant', list_to_atom(Vacant)},
 				{'FarSPPrice', list_to_binary(FarSPPrice)},
 				{'NearSPPrice', list_to_binary(NearSPPrice)},
-				{'ActualSPPrice', list_to_binary(ActualSPPrice)}]} | Acc]).
+				{'ActualSPPrice', list_to_binary(ActualSPPrice)},
+				{'Prices', parsePrices(Prices, [])}
+			      ]} | Acc]).
+
+parsePrices([], Acc) -> Acc;
+parsePrices([H | T], Acc) -> 
+    Split = split(lists:delete([],H), []),
+    %io:format("split ~p~n", [Split]),
+    parsePrices( T, [[{struct, [{'price', list_to_float(Price)},
+				{'amount', list_to_float(AmountAvailable)},
+				{'side', list_to_binary(Side)},
+				{'depth', list_to_integer(Depth)}]} || [Price, AmountAvailable, Side, Depth] <- Split] | Acc]).
+
+
+split([], Acc) -> lists:reverse(Acc);
+split(L, Acc) ->
+    {H, T} = lists:split(4, L),
+    split(T, [H | Acc]).
+    
