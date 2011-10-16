@@ -52,6 +52,7 @@
 
 -define(SERVER, ?MODULE). 
 -define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min
+-define(BETFAIR_API_HIT_TIMEOUT, 10000). %% 10sec for now to avoid throttling
 
 -record(state, {gs_wsdl, gx_wsdl, token, publishedMarketPids = []}).
 
@@ -78,19 +79,19 @@ getAllMarkets() ->
     getAllMarkets(nil).
 
 getAllMarkets(MarketTypeId) ->
-    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}, infinity). %%, infinity).
+    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}).
 
 getMarket(MarketId) ->
-    gen_server:call(?SERVER, {getMarket, MarketId}). %%, infinity).
+    gen_server:call(?SERVER, {getMarket, MarketId}).
 
 getBet(BetId) ->
-    gen_server:call(?SERVER, {getBet, BetId}). %%, infinity).
+    gen_server:call(?SERVER, {getBet, BetId}).
 
 getMarketInfo(MarketId) ->
-    gen_server:call(?SERVER, {getMarketInfo, MarketId}). %%, infinity).
+    gen_server:call(?SERVER, {getMarketInfo, MarketId}).
     
 getMarketPricesCompressed(MarketId) ->
-    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId}). %%, infinity).
+    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId}).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -291,7 +292,7 @@ handle_cast({publishMarket, MarketId}, State) ->
     case proplists:is_defined(MarketId, State#state.publishedMarketPids) of
 	false ->
 	    %% market is not being published, start publishing process.
-	    log4erl:info("start publishing for Market ~p", [MarketId]),
+	    log4erl:info("start publishing prices for Market ~p", [MarketId]),
 	    Pid = spawn_link(fun() -> run_publisher(MarketId) end),
 	    {noreply, State#state{publishedMarketPids = [{MarketId, Pid} | State#state.publishedMarketPids]}};
 	true ->
@@ -300,11 +301,11 @@ handle_cast({publishMarket, MarketId}, State) ->
 handle_cast({unpublishMarket, MarketId}, State) ->
     case proplists:lookup(MarketId, State#state.publishedMarketPids) of
 	{MarketId, Pid} ->
-	    log4erl:info("stop publishing for Market ~p", [MarketId]),
+	    log4erl:info("stop publishing prices for Market ~p", [MarketId]),
 	    Pid ! cancel,
 	    {noreply, State#state{publishedMarketPids = proplists:delete(MarketId, State#state.publishedMarketPids)}};
 	none ->
-	    log4erl:error("not subscribed market ~p", [MarketId]),
+	    log4erl:error("not subscribed to market ~p", [MarketId]),
 	    {noreply, State}
     end;
 handle_cast(_Msg, State) ->
@@ -373,7 +374,7 @@ keepalive_timer(Timeout) ->
 run_publisher(MarketId) ->
     receive
 	cancel -> void
-    after 10000 ->
+    after ?BETFAIR_API_HIT_TIMEOUT ->
 	    Quote = getMarketPricesCompressed(MarketId),
 	    io:format("Quote ~p~n", [Quote]),
 	    %%io:format("Quote ~p~n", [ok]),
