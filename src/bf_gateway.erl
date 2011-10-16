@@ -35,7 +35,9 @@
 	 getMarket/1,
 	 getBet/1,
 	 getMarketInfo/1,
-	 getMarketPricesCompressed/1
+	 getMarketPricesCompressed/1,
+	 publishMarket/1,
+	 unpublishMarket/1
 	]).
 
 %% gen_server callbacks
@@ -51,7 +53,7 @@
 -define(SERVER, ?MODULE). 
 -define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min
 
--record(state, {gs_wsdl, gx_wsdl, token}).
+-record(state, {gs_wsdl, gx_wsdl, token, publishedMarketPids = []}).
 
 %%%===================================================================
 %%% API
@@ -89,6 +91,24 @@ getMarketInfo(MarketId) ->
     
 getMarketPricesCompressed(MarketId) ->
     gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId}). %%, infinity).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% publish prices for a given market
+%% @end
+%%--------------------------------------------------------------------
+-spec publishMarket(integer()) -> ok.
+publishMarket(MarketId) ->
+    gen_server:cast(?SERVER, {publishMarket, MarketId}).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% stop publishing prices from a given market
+%% @end
+%%--------------------------------------------------------------------
+-spec unpublishMarket(integer()) -> ok.
+unpublishMarket(MarketId) ->
+    gen_server:cast(?SERVER, {unpublishMarket, MarketId}).
 
 
 %%--------------------------------------------------------------------
@@ -267,6 +287,26 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_cast({publishMarket, MarketId}, State) ->
+    case proplists:is_defined(MarketId, State#state.publishedMarketPids) of
+	false ->
+	    %% market is not being published, start publishing process.
+	    log4erl:info("start publishing for Market ~p", [MarketId]),
+	    Pid = spawn_link(fun() -> run_publisher(MarketId) end),
+	    {noreply, State#state{publishedMarketPids = [{MarketId, Pid} | State#state.publishedMarketPids]}};
+	true ->
+	    {noreply, State}
+    end;
+handle_cast({unpublishMarket, MarketId}, State) ->
+    case proplists:lookup(MarketId, State#state.publishedMarketPids) of
+	{MarketId, Pid} ->
+	    log4erl:info("stop publishing for Market ~p", [MarketId]),
+	    Pid ! cancel,
+	    {noreply, State#state{publishedMarketPids = proplists:delete(MarketId, State#state.publishedMarketPids)}};
+	none ->
+	    log4erl:error("not subscribed market ~p", [MarketId]),
+	    {noreply, State}
+    end;
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -323,3 +363,21 @@ keepalive_timer(Timeout) ->
     log4erl:info("sending keepalive..."),
     bf_gateway:keepAlive(),
     keepalive_timer(Timeout).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% recursiverly call getMarketPricesCompressed for a given market and publish quotes to ZeroMQ
+%% @end
+%%--------------------------------------------------------------------
+-spec run_publisher(integer()) -> no_return().
+run_publisher(MarketId) ->
+    receive
+	cancel -> void
+    after 10000 ->
+	    Quote = getMarketPricesCompressed(MarketId),
+	    io:format("Quote ~p~n", [Quote]),
+	    %%io:format("Quote ~p~n", [ok]),
+	    run_publisher(MarketId)
+    end.
+
+
