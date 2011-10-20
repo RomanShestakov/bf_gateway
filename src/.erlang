@@ -7,6 +7,7 @@ code:add_patha("/Users/romanshestakov/Development/betfairgateway/ebin").
 code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/log4erl/ebin").
 code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/detergent/ebin").
 code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/erlsom/ebin").
+code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/erlzmq/ebin").
 code:add_patha("/Users/romanshestakov/Development/betfairgateway/deps/mochiweb/ebin").
 
 c:cd("..").
