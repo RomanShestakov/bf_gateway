@@ -23,16 +23,16 @@
 -behaviour(gen_server).
 
 -define(SERVER, ?MODULE). 
--define(BETFAIR_API_HIT_TIMEOUT, 30000). %% 10sec for now to avoid throttling
+-define(BETFAIR_API_HIT_TIMEOUT, 10000). %% 10sec for now to avoid throttling
 
 %% API
--export([start_link/0]).
+-export([start_link/0, publish_price/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--record(state, {publishedMarketPids = []}).
+-record(state, {publishedMarketPids = [], publisher}).
 
 %%====================================================================
 %% API
@@ -44,6 +44,8 @@
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
+publish_price(Msg) ->
+    gen_server:cast(?SERVER, {publish, Msg}).
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
@@ -56,7 +58,11 @@ start_link() ->
 %% Description: Initializes the server
 %%--------------------------------------------------------------------
 init([]) ->
-    {ok, #state{}}.
+    %% Prepare our context and publisher
+    {ok, Context} = erlzmq:context(),
+    {ok, Publisher} = erlzmq:socket(Context, pub),
+    ok = erlzmq:bind(Publisher, "tcp://*:5556"),
+    {ok, #state{publisher = Publisher}}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -77,7 +83,11 @@ handle_call(_Request, _From, State) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
 %%--------------------------------------------------------------------
-handle_cast({publishMarket, MarketId}, State) ->
+handle_cast({publish, Msg}, State) ->
+    %%log4erl:info("PUBLISHING ~p", [Msg]),
+    ok = erlzmq:send(State#state.publisher, Msg),
+    {noreply, State};
+handle_cast({subscribeToMarket, MarketId}, State) ->
     case proplists:is_defined(MarketId, State#state.publishedMarketPids) of
 	false ->
 	    %% market is not being published, start publishing process.
@@ -87,7 +97,7 @@ handle_cast({publishMarket, MarketId}, State) ->
 	true ->
 	    {noreply, State}
     end;
-handle_cast({unpublishMarket, MarketId}, State) ->
+handle_cast({unsubscribeFromMarket, MarketId}, State) ->
     case proplists:lookup(MarketId, State#state.publishedMarketPids) of
 	{MarketId, Pid} ->
 	    log4erl:info("stop publishing prices for Market ~p", [MarketId]),
@@ -141,7 +151,6 @@ run_publisher(MarketId) ->
 	cancel -> void
     after ?BETFAIR_API_HIT_TIMEOUT ->
 	    Quote = bf_gateway:getMarketPricesCompressed(MarketId),
-	    io:format("Quote ~p~n", [Quote]),
-	    %%io:format("Quote ~p~n", [ok]),
+	    bf_publisher:publish_price(Quote),
 	    run_publisher(MarketId)
     end.

@@ -36,8 +36,8 @@
 	 getBet/1,
 	 getMarketInfo/1,
 	 getMarketPricesCompressed/1,
-	 publishMarket/1,
-	 unpublishMarket/1
+	 subscribeToMarket/1,
+	 unsubscribeFromMarket/1
 	]).
 
 %% gen_server callbacks
@@ -97,19 +97,18 @@ getMarketPricesCompressed(MarketId) ->
 %% publish prices for a given market
 %% @end
 %%--------------------------------------------------------------------
--spec publishMarket(integer()) -> ok.
-publishMarket(MarketId) ->
-    gen_server:cast(bf_publisher, {publishMarket, MarketId}).
+-spec subscribeToMarket(integer()) -> ok.
+subscribeToMarket(MarketId) ->
+    gen_server:cast(bf_publisher, {subscribeToMarket, MarketId}).
 
 %%--------------------------------------------------------------------
 %% @doc
 %% stop publishing prices from a given market
 %% @end
 %%--------------------------------------------------------------------
--spec unpublishMarket(integer()) -> ok.
-unpublishMarket(MarketId) ->
-    gen_server:cast(bf_publisher, {unpublishMarket, MarketId}).
-
+-spec unsubscribeFromMarket(integer()) -> ok.
+unsubscribeFromMarket(MarketId) ->
+    gen_server:cast(bf_publisher, {unsubscribeFromMarket, MarketId}).
 
 %%--------------------------------------------------------------------
 %% @doc
