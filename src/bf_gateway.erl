@@ -52,9 +52,8 @@
 
 -define(SERVER, ?MODULE). 
 -define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min
--define(BETFAIR_API_HIT_TIMEOUT, 10000). %% 10sec for now to avoid throttling
 
--record(state, {gs_wsdl, gx_wsdl, token, publishedMarketPids = []}).
+-record(state, {gs_wsdl, gx_wsdl, token, publishedMarketPids = [], publisher}).
 
 %%%===================================================================
 %%% API
@@ -100,7 +99,7 @@ getMarketPricesCompressed(MarketId) ->
 %%--------------------------------------------------------------------
 -spec publishMarket(integer()) -> ok.
 publishMarket(MarketId) ->
-    gen_server:cast(?SERVER, {publishMarket, MarketId}).
+    gen_server:cast(bf_publisher, {publishMarket, MarketId}).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -109,7 +108,7 @@ publishMarket(MarketId) ->
 %%--------------------------------------------------------------------
 -spec unpublishMarket(integer()) -> ok.
 unpublishMarket(MarketId) ->
-    gen_server:cast(?SERVER, {unpublishMarket, MarketId}).
+    gen_server:cast(bf_publisher, {unpublishMarket, MarketId}).
 
 
 %%--------------------------------------------------------------------
@@ -150,7 +149,9 @@ init([]) ->
 	    log4erl:info("succesfully logged to betfair"),
 	    %% start keepalive loop to make sure the connection won't timeout
 	    spawn_link(fun() -> keepalive_timer(?KEEP_ALIVE_TIMEOUT) end),
-	    {ok, #state{gs_wsdl = GS_Wsdl, gx_wsdl = GX_Wsdl, token = Token}};
+	    %% start publisher, which takes care of communication with 0mq.
+	    Pid = bf_publisher:start_link(), 
+	    {ok, #state{gs_wsdl = GS_Wsdl, gx_wsdl = GX_Wsdl, token = Token, publisher = Pid}};
 	{login_error, Err} ->
 	    log4erl:error("error logging to betfair ~p", [Err]),
 	    {stop, Err}
@@ -288,26 +289,6 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_cast({publishMarket, MarketId}, State) ->
-    case proplists:is_defined(MarketId, State#state.publishedMarketPids) of
-	false ->
-	    %% market is not being published, start publishing process.
-	    log4erl:info("start publishing prices for Market ~p", [MarketId]),
-	    Pid = spawn_link(fun() -> run_publisher(MarketId) end),
-	    {noreply, State#state{publishedMarketPids = [{MarketId, Pid} | State#state.publishedMarketPids]}};
-	true ->
-	    {noreply, State}
-    end;
-handle_cast({unpublishMarket, MarketId}, State) ->
-    case proplists:lookup(MarketId, State#state.publishedMarketPids) of
-	{MarketId, Pid} ->
-	    log4erl:info("stop publishing prices for Market ~p", [MarketId]),
-	    Pid ! cancel,
-	    {noreply, State#state{publishedMarketPids = proplists:delete(MarketId, State#state.publishedMarketPids)}};
-	none ->
-	    log4erl:error("not subscribed to market ~p", [MarketId]),
-	    {noreply, State}
-    end;
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -364,21 +345,5 @@ keepalive_timer(Timeout) ->
     log4erl:info("sending keepalive..."),
     bf_gateway:keepAlive(),
     keepalive_timer(Timeout).
-
-%%--------------------------------------------------------------------
-%% @doc
-%% recursiverly call getMarketPricesCompressed for a given market and publish quotes to ZeroMQ
-%% @end
-%%--------------------------------------------------------------------
--spec run_publisher(integer()) -> no_return().
-run_publisher(MarketId) ->
-    receive
-	cancel -> void
-    after ?BETFAIR_API_HIT_TIMEOUT ->
-	    Quote = getMarketPricesCompressed(MarketId),
-	    io:format("Quote ~p~n", [Quote]),
-	    %%io:format("Quote ~p~n", [ok]),
-	    run_publisher(MarketId)
-    end.
 
 
