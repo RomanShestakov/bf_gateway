@@ -137,6 +137,7 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
+    process_flag(trap_exit, true),
     %% init SOAP service wsdl files
     GS_Wsdl = detergent:initModel(get_GS_Wsdl()),
     GX_Wsdl = detergent:initModel(get_GX_Wsdl()),

@@ -25,7 +25,7 @@
 %% Application callbacks
 -export([start/0, start/2, stop/1, stop/0]).
 
--define(APPS, [inets, log4erl, betfairgateway]).
+-define(APPS, [inets, crypto, log4erl, betfairgateway]).
 %-define(APPS, [log4erl]).
 
 %% ===================================================================

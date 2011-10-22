@@ -32,7 +32,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--record(state, {publishedMarketPids = [], publisher}).
+-record(state, {publishedMarketPids = [], context, publisher}).
 
 %%====================================================================
 %% API
@@ -58,11 +58,14 @@ publish_price(Msg) ->
 %% Description: Initializes the server
 %%--------------------------------------------------------------------
 init([]) ->
+    log4erl:info("starting publisher"),
+    %% trap exit so clean up would work
+    process_flag(trap_exit, true),
     %% Prepare our context and publisher
     {ok, Context} = erlzmq:context(),
     {ok, Publisher} = erlzmq:socket(Context, pub),
     ok = erlzmq:bind(Publisher, "tcp://*:5556"),
-    {ok, #state{publisher = Publisher}}.
+    {ok, #state{context = Context, publisher = Publisher}}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -126,7 +129,9 @@ handle_info(_Info, State) ->
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
 %%--------------------------------------------------------------------
-terminate(_Reason, _State) ->
+terminate(_Reason, State) ->
+    erlzmq:close(State#state.publisher),
+    erlzmq:term(State#state.context),
     ok.
 
 %%--------------------------------------------------------------------
