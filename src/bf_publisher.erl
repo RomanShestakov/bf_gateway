@@ -90,7 +90,7 @@ handle_cast({publish, Msg}, State) ->
     %%log4erl:info("PUBLISHING ~p", [Msg]),
     ok = erlzmq:send(State#state.publisher, Msg),
     {noreply, State};
-handle_cast({subscribeToMarket, MarketId}, State) ->
+handle_cast({subscribeMarket, MarketId}, State) ->
     case proplists:is_defined(MarketId, State#state.publishedMarketPids) of
 	false ->
 	    %% market is not being published, start publishing process.
@@ -100,7 +100,7 @@ handle_cast({subscribeToMarket, MarketId}, State) ->
 	true ->
 	    {noreply, State}
     end;
-handle_cast({unsubscribeFromMarket, MarketId}, State) ->
+handle_cast({unsubscribeMarket, MarketId}, State) ->
     case proplists:lookup(MarketId, State#state.publishedMarketPids) of
 	{MarketId, Pid} ->
 	    log4erl:info("stop publishing prices for Market ~p", [MarketId]),

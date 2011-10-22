@@ -36,8 +36,8 @@
 	 getBet/1,
 	 getMarketInfo/1,
 	 getMarketPricesCompressed/1,
-	 subscribeToMarket/1,
-	 unsubscribeFromMarket/1
+	 subscribeMarket/1,
+	 unsubscribeMarket/1
 	]).
 
 %% gen_server callbacks
@@ -97,18 +97,18 @@ getMarketPricesCompressed(MarketId) ->
 %% publish prices for a given market
 %% @end
 %%--------------------------------------------------------------------
--spec subscribeToMarket(integer()) -> ok.
-subscribeToMarket(MarketId) ->
-    gen_server:cast(bf_publisher, {subscribeToMarket, MarketId}).
+-spec subscribeMarket(integer()) -> ok.
+subscribeMarket(MarketId) ->
+    gen_server:cast(bf_publisher, {subscribeMarket, MarketId}).
 
 %%--------------------------------------------------------------------
 %% @doc
 %% stop publishing prices from a given market
 %% @end
 %%--------------------------------------------------------------------
--spec unsubscribeFromMarket(integer()) -> ok.
-unsubscribeFromMarket(MarketId) ->
-    gen_server:cast(bf_publisher, {unsubscribeFromMarket, MarketId}).
+-spec unsubscribeMarket(integer()) -> ok.
+unsubscribeMarket(MarketId) ->
+    gen_server:cast(bf_publisher, {unsubscribeMarket, MarketId}).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -345,5 +345,3 @@ keepalive_timer(Timeout) ->
     log4erl:info("sending keepalive..."),
     bf_gateway:keepAlive(),
     keepalive_timer(Timeout).
-
-
