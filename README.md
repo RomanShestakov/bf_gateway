@@ -1,8 +1,7 @@
-betfairgateway - Erlang based implementation of betfair API
+bf_gateway - Erlang based implementation of betfair API
 ==============================================
 
-eventually, this application should be able to accept subsribe requests and pull data for required markets and publish prices in json format to zeromq.
-
+allows to subsribe to the betfair markets, pulls prices and pushes them to 0MQ bus so client application could subsribe to the events published thru the message bus.
 
 ## Dependencies
 
@@ -10,30 +9,31 @@ eventually, this application should be able to accept subsribe requests and pull
 2. Detergent for SOAP interactions
 3. log4erl for logging
 4. mochiweb for json parsing
+5. erlzmq - erlang bindings for 0MQ
 
 ## Building
 
-betfairgateway uses rebar for building and wraps it in a Makefile for convenience.
+bf_gateway uses rebar for building and wraps it in a Makefile for convenience.
 
 First clone from GitHub:
 
-    $ git clone git://github.com/romanshestakov/betfairgateway.git
+    $ git clone git://github.com/romanshestakov/bf_gateway.git
 
 Then change into the newly created directory:
 
-    $ cd betfairgateway
+    $ cd bf_gateway
 
 Add your betfair username and password into rel/files/app.config
-do the same in src/betfairgateway.app.src
+do the same in src/bf_gateway.app.src
 
 then build release:
 
     $ make rel
 
-Rebar will first pull in dependencies from GitHub, attempt to build them all, then build betfairgateway.
+Rebar will first pull in dependencies from GitHub, attempt to build them all, then build bf_gateway.
 
 start app with 
-./rel/betfairgateway/bin/betfairgateway console
+./rel/bf_gateway/bin/bf_gateway console
 
 if everything ok, you should see 
 "succesfully logged to betfair"
@@ -41,8 +41,6 @@ if everything ok, you should see
 after that you can run commands specified by betfair API
 e.g.
 bf_gateway:getMarketInfo(102873781).
-
-
 
 
 
