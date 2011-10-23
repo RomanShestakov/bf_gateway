@@ -1,14 +1,15 @@
 io:format("starting Erlang shell, executing .erlang ~n").
 Dir = filename:absname(".").
-io:format("current dir: ~p ~n", [Dir]).
+BaseDir = filename:join(lists:reverse(lists:nthtail(2, lists:reverse(filename:split(Dir))))).
+io:format("current dir: ~p; base dir: ~p ~n", [Dir, BaseDir]).
 code:add_patha(".").
 code:add_patha("./ebin").
-code:add_patha("/Users/romanshestakov/Development/bf_gateway/ebin").
-code:add_patha("/Users/romanshestakov/Development/bf_gateway/deps/log4erl/ebin").
-code:add_patha("/Users/romanshestakov/Development/bf_gateway/deps/detergent/ebin").
-code:add_patha("/Users/romanshestakov/Development/bf_gateway/deps/erlsom/ebin").
-code:add_patha("/Users/romanshestakov/Development/bf_gateway/deps/erlzmq/ebin").
-code:add_patha("/Users/romanshestakov/Development/bf_gateway/deps/mochiweb/ebin").
+code:add_patha(filename:join(BaseDir, "ebin")).
+code:add_patha(filename:join(BaseDir, "deps/log4erl/ebin")).
+code:add_patha(filename:join(BaseDir, "deps/detergent/ebin")).
+code:add_patha(filename:join(BaseDir, "deps/erlsom/ebin")).
+code:add_patha(filename:join(BaseDir, "deps/erlzmq/ebin")).
+code:add_patha(filename:join(BaseDir, "deps/mochiweb/ebin")).
 
 c:cd("..").
 io:format("changed dir to: ~p ~n", [filename:absname(".")]).
