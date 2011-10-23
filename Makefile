@@ -17,14 +17,14 @@ doc:
 
 rel: all
 	rebar generate
-	chmod u+x rel/betfairgateway/bin/betfairgateway
+	chmod u+x rel/bf_gateway/bin/bf_gateway
 
 relclean:
-	rm -rf rel/betfairgateway
+	rm -rf rel/bf_gateway
 
 APPS = kernel stdlib sasl erts ssl tools os_mon runtime_tools crypto inets \
 xmerl snmp public_key mnesia eunit syntax_tools compiler
-COMBO_PLT = $(HOME)/.betfairgateway_dialyzer_plt
+COMBO_PLT = $(HOME)/.bf_gateway_dialyzer_plt
 
 check_plt: compile
 	dialyzer --check_plt --plt $(COMBO_PLT) --apps $(APPS) \

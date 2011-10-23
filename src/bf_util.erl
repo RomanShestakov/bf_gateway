@@ -1,13 +1,13 @@
 %% Copyright (C) 2011 Roman Shestakov
 %%%
-%%% This file is part of betfairgateway
+%%% This file is part of bf_gateway
 %%%
-%%% betfairgateway is free software: you can redistribute it and/or modify
+%%% bf_gateway is free software: you can redistribute it and/or modify
 %%% it under the terms of the GNU Lesser General Public License as 
 %%% published by the Free Software Foundation, either version 3 of 
 %%% the License, or (at your option) any later version.
 %%%
-%%% betfairgateway is distributed in the hope that it will be useful,
+%%% bf_gateway is distributed in the hope that it will be useful,
 %%% but WITHOUT ANY WARRANTY; without even the implied warranty of
 %%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %%% GNU Lesser General Public License for more details.
@@ -36,7 +36,7 @@
 %%--------------------------------------------------------------------
 -spec log4erl_config() -> string() | no_return().
 log4erl_config() ->
-    case application:get_env(betfairgateway, log4erl_config) of
+    case application:get_env(bf_gateway, log4erl_config) of
 	{ok, Value} -> Value;
 	undefined -> throw({error, log4erl_config_not_defined})
     end.
@@ -48,7 +48,7 @@ log4erl_config() ->
 %%--------------------------------------------------------------------
 -spec get_username() -> string() | no_return().
 get_username() ->
-    case application:get_env(betfairgateway, username) of
+    case application:get_env(bf_gateway, username) of
 	{ok, Value} -> Value;
 	undefined -> throw({error, username_not_defined})
     end.
@@ -60,7 +60,7 @@ get_username() ->
 %%--------------------------------------------------------------------
 -spec get_password() -> string() | no_return().
 get_password() ->
-    case application:get_env(betfairgateway, password) of
+    case application:get_env(bf_gateway, password) of
 	{ok, Value} -> Value;
 	undefined -> throw({error, password_not_defined})
     end.
@@ -72,7 +72,7 @@ get_password() ->
 %%--------------------------------------------------------------------
 -spec get_GS_Wsdl() -> string().
 get_GS_Wsdl() ->
-    "file://" ++ code:priv_dir(betfairgateway) ++ "/BFGlobalService.wsdl".
+    "file://" ++ code:priv_dir(bf_gateway) ++ "/BFGlobalService.wsdl".
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -81,4 +81,4 @@ get_GS_Wsdl() ->
 %%--------------------------------------------------------------------
 -spec get_GX_Wsdl() -> string().
 get_GX_Wsdl() ->
-    "file://" ++ code:priv_dir(betfairgateway) ++ "/BFExchangeService.wsdl".
+    "file://" ++ code:priv_dir(bf_gateway) ++ "/BFExchangeService.wsdl".

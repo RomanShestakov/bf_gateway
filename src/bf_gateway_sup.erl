@@ -1,13 +1,13 @@
 %% Copyright (C) 2011 Roman Shestakov
 %%%
-%%% This file is part of betfairgateway
+%%% This file is part of bf_gateway
 %%%
-%%% betfairgateway is free software: you can redistribute it and/or modify
+%%% bf_gateway is free software: you can redistribute it and/or modify
 %%% it under the terms of the GNU Lesser General Public License as 
 %%% published by the Free Software Foundation, either version 3 of 
 %%% the License, or (at your option) any later version.
 %%%
-%%% betfairgateway is distributed in the hope that it will be useful,
+%%% bf_gateway is distributed in the hope that it will be useful,
 %%% but WITHOUT ANY WARRANTY; without even the implied warranty of
 %%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %%% GNU Lesser General Public License for more details.
@@ -18,7 +18,7 @@
 %%%
 %%% Author contact: romanshestakov@yahoo.co.uk
 
--module(betfairgateway_sup).
+-module(bf_gateway_sup).
 
 -behaviour(supervisor).
 

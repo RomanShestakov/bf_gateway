@@ -1,9 +1,9 @@
 
 ## Name of the node
--name betfairgateway@127.0.0.1
+-name bf_gateway@127.0.0.1
 
 ## Cookie for distributed erlang
--setcookie betfairgateway
+-setcookie bf_gateway
 
 ## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
 ## (Disabled by default..use with caution!)

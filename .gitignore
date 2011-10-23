@@ -8,5 +8,5 @@ logs
 *.beam
 /deps/*
 /doc/*
-rel/betfairgateway
-rel/betfairgateway/*
+rel/bf_gateway
+rel/bf_gateway/*

@@ -13,10 +13,12 @@ main(Args) ->
 
 
     %% Subscribe to zipcode, default is NYC, 10001
-    Filter = case Args of
-		 [] -> "{";
-		 [Arg1|_] -> list_to_binary(Arg1)
-	     end,
+%%    Filter = "{\"MarketId\":102873783",
+    Filter = "{",
+%% case Args of
+%% 		 [] -> <<"MarketId":102873783>>;
+%% 		 [Arg1|_] -> list_to_binary(Arg1)
+%% 	     end,
     ok = erlzmq:setsockopt(Subscriber, subscribe, Filter),
     
     %% Process 5 updates (Erlang server is slow relative to C)

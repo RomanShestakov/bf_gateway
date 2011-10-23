@@ -1,4 +1,4 @@
-{application, betfairgateway,
+{application, bf_gateway,
  [
   {description, ""},
   {vsn, "1"},
@@ -10,8 +10,8 @@
 		  ssl,
 		  inets
                  ]},
-  {mod, { betfairgateway_app, [betfairgateway_app,
-			      betfairgateway_sup,
+  {mod, { bf_gateway_app, [bf_gateway_app,
+			      bf_gateway_sup,
 			      bf_util,
 			      bf_api,
 			      bf_gateway,
