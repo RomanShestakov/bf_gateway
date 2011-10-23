@@ -61,6 +61,5 @@ detergent:write_hrl("file://./priv/BFExchangeService.wsdl", "BFExchangeService.h
 
 make test
 
-
 License
 =======
