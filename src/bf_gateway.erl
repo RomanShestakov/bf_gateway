@@ -36,6 +36,7 @@
 	 getBet/1,
 	 getMarketInfo/1,
 	 getMarketPricesCompressed/1,
+	 getMarketPricesCompressed/2,
 	 subscribeMarket/1,
 	 unsubscribeMarket/1
 	]).
@@ -88,9 +89,13 @@ getBet(BetId) ->
 
 getMarketInfo(MarketId) ->
     gen_server:call(?SERVER, {getMarketInfo, MarketId}).
-    
+
 getMarketPricesCompressed(MarketId) ->
-    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId}).
+    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId, default}).
+
+getMarketPricesCompressed(MarketId, Format) ->
+    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId, Format}).
+    
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -264,8 +269,8 @@ handle_call({getBet, BetId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = S
 	    log4erl:error("~p error in getBet call ~p", [Other, Reason]),
  	    {reply, Reason, State#state{token = Token}}
     end;
-handle_call({getMarketPricesCompressed, MarketId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
-    case bf_api:getMarketPricesCompressed(GX_Wsdl, Token, MarketId) of
+handle_call({getMarketPricesCompressed, MarketId, Format}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    case bf_api:getMarketPricesCompressed(GX_Wsdl, Token, MarketId, Format) of
 	{ok, NewToken, MarketPrices} ->
 	    {reply, MarketPrices, State#state{token = NewToken}};
 	{getMarketPricesCompressed_error, Err, NToken} ->

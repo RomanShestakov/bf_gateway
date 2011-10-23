@@ -32,7 +32,7 @@
 	 getBet/3,
 	 getMarket/3,
 	 getMarketInfo/3,
-	 getMarketPricesCompressed/3
+	 getMarketPricesCompressed/4
 	]).
 
 -include("../include/BFGlobalService.hrl").
@@ -363,7 +363,7 @@ getMarketInfo(GX_Wsdl, Token, MarketId) ->
 %% @end
 %%--------------------------------------------------------------------
 %%-spec
-getMarketPricesCompressed(GX_Wsdl, Token, MarketId) -> 
+getMarketPricesCompressed(GX_Wsdl, Token, MarketId, Format) -> 
     GetMarketPricesCompressedReq = 
 	#'P:GetMarketPricesCompressedReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },
 					  'currencyCode' = ?CURRENCY_CODE,
@@ -379,7 +379,7 @@ getMarketPricesCompressed(GX_Wsdl, Token, MarketId) ->
 								      errorCode = ErrCode,
 								      minorErrorCode = MErrCode}}]} ->
 		case ErrCode == ?GET_MARKET_PRICES_ERROR_OK of
-		    true ->  {ok, NewToken, bf_json:encode({marketPrices, list_to_binary(MarketPrices)})};
+		    true ->  {ok, NewToken, bf_json:encode({marketPrices, list_to_binary(MarketPrices), Format})};
 		    false -> {getMarketPricesCompressed_error, {ErrCode, MErrCode}, NewToken}
 		end;
 	    Other -> {getMarketPricesCompressed_unknown_error, Other}

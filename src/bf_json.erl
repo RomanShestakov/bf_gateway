@@ -155,7 +155,7 @@ encode({all_markets, Bin}) ->
 %% %%bf_json:encode({marketPrices, MP}).
 %% encode({marketPrices, Bin}) ->
 
-encode({marketPrices, Bin}) ->
+encode({marketPrices, Bin, Format}) ->
     [[[MarketId,
        Currency, 
        MarketStatus,
@@ -167,19 +167,25 @@ encode({marketPrices, Bin}) ->
        RefreshTime,
        _RemovedRunners, %% TODO - parse removed runners
        BSPMarket  | _N]] | T] = parseMarketPrices(Bin), 
-    iolist_to_binary(
-      mochijson2:encode({struct, [{'MarketId', list_to_integer(MarketId)},
-				  {'Currency', list_to_binary(Currency)},
-				  {'MarketStatus', list_to_binary(MarketStatus)},
-				  {'InPlayDelay', list_to_integer(InPlayDelay)},
-				  {'NumberOfWinners', list_to_integer(NumberOfWinners)},
-				  {'MarketInfo', list_to_binary(MarketInfo)},
-				  {'DiscountAllowed', list_to_atom(DiscountAllowed)},
-				  {'MarketBaseRate', list_to_binary(MarketBaseRate)},
-				  {'RefreshTime', list_to_integer(RefreshTime)},
-				  {'BSPMarket', list_to_binary(BSPMarket)},
-				  {'RunnersInfo', parseRunners(T, [])}
-				 ]}));
+    
+    case Format of
+	default ->
+	    iolist_to_binary(
+	      mochijson2:encode({struct, [{'MarketId', list_to_integer(MarketId)},
+					  {'Currency', list_to_binary(Currency)},
+					  {'MarketStatus', list_to_binary(MarketStatus)},
+					  {'InPlayDelay', list_to_integer(InPlayDelay)},
+					  {'NumberOfWinners', list_to_integer(NumberOfWinners)},
+					  {'MarketInfo', list_to_binary(MarketInfo)},
+					  {'DiscountAllowed', list_to_atom(DiscountAllowed)},
+					  {'MarketBaseRate', list_to_binary(MarketBaseRate)},
+					  {'RefreshTime', list_to_integer(RefreshTime)},
+					  {'BSPMarket', list_to_binary(BSPMarket)},
+					  {'RunnersInfo', parseRunners(T, [])}
+					 ]}));
+	compressed ->
+	    throw(compressed_format_not_implemented)
+    end;
 
 encode({bet, #'P:Bet'{'asianLineId' = AsianLineId,
 		      'avgPrice' = AvgPrice,
