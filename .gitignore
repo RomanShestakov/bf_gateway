@@ -7,6 +7,6 @@ logs
 .#*
 *.beam
 /deps/*
-/doc/*
+/docs/*
 rel/bf_gateway
 rel/bf_gateway/*
