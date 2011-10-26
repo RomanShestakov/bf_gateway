@@ -32,7 +32,7 @@
 %% Application callbacks
 %% ===================================================================
 
-    %% to start manually from console with start.sh
+%% to start manually from console with start.sh
 start() ->
     ssl:start(),
     io:format("~p~n", [ssl]),

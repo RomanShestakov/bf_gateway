@@ -110,6 +110,7 @@ logout(GS_Wsdl, Token) ->
 %% @doc
 %% keepalive
 %% @end
+
 %%--------------------------------------------------------------------
 -spec keepalive(any(), string()) -> {ok, string()} | {keepalive_error, any()}.
 keepalive(GS_Wsdl, Token) ->

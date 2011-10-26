@@ -36,9 +36,7 @@
 	 getBet/1,
 	 getMarketInfo/1,
 	 getMarketPricesCompressed/1,
-	 getMarketPricesCompressed/2,
-	 subscribeMarket/1,
-	 unsubscribeMarket/1
+	 getMarketPricesCompressed/2
 	]).
 
 %% gen_server callbacks
@@ -53,6 +51,7 @@
 
 -define(SERVER, ?MODULE). 
 -define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min
+-define(BF_PUBLISHER, bf_publisher).
 
 -record(state, {gs_wsdl, gx_wsdl, token, publishedMarketPids = [], publisher}).
 
@@ -61,60 +60,41 @@
 %%%===================================================================
 
 login(Username, Password) ->
-    gen_server:call(?SERVER, {login, Username, Password}).
+    gen_server:call({global, ?SERVER}, {login, Username, Password}).
 
 logout() ->
-    gen_server:call(?SERVER, logout).
+    gen_server:call({global, ?SERVER}, logout).
 
 keepAlive() ->
-    gen_server:call(?SERVER, keepalive).
+    gen_server:call({global, ?SERVER}, keepalive).
 
 getActiveEventTypes() ->
-    gen_server:call(?SERVER, getActiveEventTypes).
+    gen_server:call({global, ?SERVER}, getActiveEventTypes).
 
 getAllEventTypes() ->
-    gen_server:call(?SERVER, getAllEventTypes).
+    gen_server:call({global, ?SERVER}, getAllEventTypes).
 
 getAllMarkets() ->
     getAllMarkets(nil).
 
 getAllMarkets(MarketTypeId) ->
-    gen_server:call(?SERVER, {getAllMarkets, MarketTypeId}).
+    gen_server:call({global, ?SERVER}, {getAllMarkets, MarketTypeId}).
 
 getMarket(MarketId) ->
-    gen_server:call(?SERVER, {getMarket, MarketId}).
+    gen_server:call({global, ?SERVER}, {getMarket, MarketId}).
 
 getBet(BetId) ->
-    gen_server:call(?SERVER, {getBet, BetId}).
+    gen_server:call({global, ?SERVER}, {getBet, BetId}).
 
 getMarketInfo(MarketId) ->
-    gen_server:call(?SERVER, {getMarketInfo, MarketId}).
+    gen_server:call({global, ?SERVER}, {getMarketInfo, MarketId}).
 
 getMarketPricesCompressed(MarketId) ->
-    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId, default}).
+    gen_server:call({global, ?SERVER}, {getMarketPricesCompressed, MarketId, default}).
 
 getMarketPricesCompressed(MarketId, Format) ->
-    gen_server:call(?SERVER, {getMarketPricesCompressed, MarketId, Format}).
+    gen_server:call({global, ?SERVER}, {getMarketPricesCompressed, MarketId, Format}).
     
-
-%%--------------------------------------------------------------------
-%% @doc
-%% publish prices for a given market
-%% @end
-%%--------------------------------------------------------------------
--spec subscribeMarket(integer()) -> ok.
-subscribeMarket(MarketId) ->
-    gen_server:cast(bf_publisher, {subscribeMarket, MarketId}).
-
-%%--------------------------------------------------------------------
-%% @doc
-%% stop publishing prices from a given market
-%% @end
-%%--------------------------------------------------------------------
--spec unsubscribeMarket(integer()) -> ok.
-unsubscribeMarket(MarketId) ->
-    gen_server:cast(bf_publisher, {unsubscribeMarket, MarketId}).
-
 %%--------------------------------------------------------------------
 %% @doc
 %% Starts the server
@@ -123,7 +103,7 @@ unsubscribeMarket(MarketId) ->
 %% @end
 %%--------------------------------------------------------------------
 start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+    gen_server:start_link({global, ?SERVER}, ?MODULE, [], []).
 
 
 %%%===================================================================
@@ -294,6 +274,15 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+
+handle_cast({subscribeMarket, MarketId}, State) ->
+    %% forward request to bf_publisher
+    gen_server:cast(?BF_PUBLISHER, {subscribeMarket, MarketId}),
+    {noreply, State};
+handle_cast({unsubscribeMarket, MarketId}, State) ->
+    %% forward request to bf_publisher
+    gen_server:cast(?BF_PUBLISHER, {unsubscribeMarket, MarketId}),  
+    {noreply, State};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
