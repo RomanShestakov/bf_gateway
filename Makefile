@@ -16,6 +16,8 @@ doc:
 	rebar doc skip_deps=true
 
 rel: all
+	@echo "Current location"
+	pwd
 	rebar generate
 	chmod u+x rel/bf_gateway/bin/bf_gateway
 
