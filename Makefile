@@ -15,7 +15,8 @@ test: all
 doc:
 	rebar doc skip_deps=true
 
-rel: all
+rel: relclean	
+	all	
 	@echo "Current location"
 	pwd
 	rebar generate
