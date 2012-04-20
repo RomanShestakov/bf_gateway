@@ -70,15 +70,23 @@ get_password() ->
 %% get BFGlobalService.wsdl
 %% @end
 %%--------------------------------------------------------------------
--spec get_GS_Wsdl() -> string().
+-spec get_GS_Wsdl() -> string() | no_return.
 get_GS_Wsdl() ->
-    "file://" ++ code:priv_dir(bf_gateway) ++ "/BFGlobalService.wsdl".
+    File = code:priv_dir(bf_gateway) ++ "/BFGlobalService.wsdl",
+    case filelib:is_file(File) of
+	true -> File;
+	false -> throw({file_not_exist, File})
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc
 %% get BFExchangeService.wsdl
 %% @end
 %%--------------------------------------------------------------------
--spec get_GX_Wsdl() -> string().
+-spec get_GX_Wsdl() -> string() | no_return.
 get_GX_Wsdl() ->
-    "file://" ++ code:priv_dir(bf_gateway) ++ "/BFExchangeService.wsdl".
+    File = code:priv_dir(bf_gateway) ++ "/BFExchangeService.wsdl",
+    case filelib:is_file(File) of
+	true -> File;
+	false -> throw({file_not_exist, File})
+    end.

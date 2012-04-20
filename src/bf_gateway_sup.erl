@@ -45,5 +45,12 @@ start_link() ->
 
 init([]) ->
     Bfgw = {'bf_gateway',{'bf_gateway',start_link,[]},permanent,2000,worker,['bf_gateway']},
-    {ok, { {one_for_one, 5, 10}, [Bfgw]} }.
+    Ip = case os:getenv("WEBMACHINE_IP") of false -> "0.0.0.0"; Any -> Any end,
+    {ok, Dispatch} = file:consult(filename:join([filename:dirname(code:which(?MODULE)),"..", "priv", "dispatch.conf"])),
+    WebConfig = [{ip, Ip},
+                 {port, 8000},
+                 {log_dir, "log"},
+                 {dispatch, Dispatch}],
+    Web = {webmachine_mochiweb,{webmachine_mochiweb, start, [WebConfig]},permanent, 5000, worker, dynamic},
+    {ok, { {one_for_one, 5, 10}, [Bfgw, Web]} }.
 

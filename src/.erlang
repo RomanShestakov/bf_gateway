@@ -11,7 +11,7 @@ Dirs =
      case filelib:is_dir("deps") of
 	 true ->
 	     Current = lists:delete(".",filename:split(filename:absname("."))),
-	     [filename:join(Current ++ [File]) || File <- filelib:wildcard("deps/*"), string:str(File, ".") =:= 0 ];
+	     [filename:join(Current ++ [File] ++ ["ebin"]) || File <- filelib:wildcard("deps/*"), string:str(File, ".") =:= 0 ];
 	 false -> []
      end.
 

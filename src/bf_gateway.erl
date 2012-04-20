@@ -124,22 +124,26 @@ start_link() ->
 init([]) ->
     process_flag(trap_exit, true),
     %% init SOAP service wsdl files
-    GS_Wsdl = detergent:initModel(get_GS_Wsdl()),
-    GX_Wsdl = detergent:initModel(get_GX_Wsdl()),
-    %% login to betfair
-    log4erl:info("logging to betfair..."),
-    %% at this point the message loop is not started yet, so we call bf_api:login directly
-    case bf_api:login(GS_Wsdl, get_username(), get_password()) of
-	{ok, Token} ->
-	    log4erl:info("succesfully logged to betfair"),
-	    %% start keepalive loop to make sure the connection won't timeout
-	    spawn_link(fun() -> keepalive_timer(?KEEP_ALIVE_TIMEOUT) end),
-	    %% start publisher, which takes care of communication with 0mq.
-	    Pid = bf_publisher:start_link(), 
-	    {ok, #state{gs_wsdl = GS_Wsdl, gx_wsdl = GX_Wsdl, token = Token, publisher = Pid}};
-	{login_error, Err} ->
-	    log4erl:error("error logging to betfair ~p", [Err]),
-	    {stop, Err}
+    try
+	GS_Wsdl = detergent:initModel(get_GS_Wsdl()),
+	GX_Wsdl = detergent:initModel(get_GX_Wsdl()),
+	%% login to betfair
+	log4erl:info("logging to betfair..."),
+	%% at this point the message loop is not started yet, so we call bf_api:login directly
+	case bf_api:login(GS_Wsdl, get_username(), get_password()) of
+	    {ok, Token} ->
+		log4erl:info("succesfully logged to betfair"),
+		%% start keepalive loop to make sure the connection won't timeout
+		spawn_link(fun() -> keepalive_timer(?KEEP_ALIVE_TIMEOUT) end),
+		%% start publisher, which takes care of communication with 0mq.
+		Pid = bf_publisher:start_link(), 
+		{ok, #state{gs_wsdl = GS_Wsdl, gx_wsdl = GX_Wsdl, token = Token, publisher = Pid}};
+	    {login_error, Err} ->
+		log4erl:error("error logging to betfair ~p", [Err]),
+		{stop, Err}
+	end
+    catch
+	_:X -> log4erl:error(X)
     end.
 
 %%--------------------------------------------------------------------
