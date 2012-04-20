@@ -25,7 +25,8 @@
 	 get_username/0,
 	 get_password/0,
 	 get_GS_Wsdl/0,
-	 get_GX_Wsdl/0
+	 get_GX_Wsdl/0,
+	 get_webmachine_ip/0
 	]).
 
 %%--------------------------------------------------------------------
@@ -64,6 +65,19 @@ get_password() ->
 	{ok, Value} -> Value;
 	undefined -> throw({error, password_not_defined})
     end.
+
+%%--------------------------------------------------------------------
+%% @doc
+%% get ip for web server
+%% @end
+%%--------------------------------------------------------------------
+-spec get_webmachine_ip() -> string() | false.
+get_webmachine_ip() ->
+    case application:get_env(bf_gateway, webmachine_ip) of
+	{ok, Value} -> Value;
+	undefined -> false %throw({error, webmachine_ip_not_defined})
+    end.
+
 
 %%--------------------------------------------------------------------
 %% @doc

@@ -45,7 +45,11 @@ start_link() ->
 
 init([]) ->
     Bfgw = {'bf_gateway',{'bf_gateway',start_link,[]},permanent,2000,worker,['bf_gateway']},
-    Ip = case os:getenv("WEBMACHINE_IP") of false -> "0.0.0.0"; Any -> Any end,
+    Ip = 
+	case bf_util:get_webmachine_ip() of
+	    false -> "0.0.0.0";
+	    Any -> Any
+	end,
     {ok, Dispatch} = file:consult(filename:join([filename:dirname(code:which(?MODULE)),"..", "priv", "dispatch.conf"])),
     WebConfig = [{ip, Ip},
                  {port, 8000},
