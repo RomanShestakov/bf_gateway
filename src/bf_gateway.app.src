@@ -17,12 +17,5 @@
 			      bf_gateway,
 			      bf_json]}},
   {registered, [bf_gateway]},
-  {env, [{username, "rshestakov"}, %% betfair username
-	 {password, "SHESTAK0V"}, %% betfair password
-	 {locationId, 0},
-	 {productId, 82},
-	 {vendorSoftwareId, 0},
-	 {log4erl_config, "etc/log4erl.conf"},
-	 {webmachine_ip, "192.168.1.67"}
-  ]}
+  {env, []}
  ]}.
