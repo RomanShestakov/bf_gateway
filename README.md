@@ -10,10 +10,15 @@ allows to subsribe to the betfair markets, pulls prices and pushes them to 0MQ b
 3. log4erl for logging
 4. mochiweb for json parsing
 5. erlzmq - erlang bindings for 0MQ
+6. zeromq - 0MQ 
 
 ## Building
 
 bf_gateway uses rebar for building and wraps it in a Makefile for convenience.
+0MQ - is c based, you might need to install the following packages: pkg-config, autoconf, automake and libtool (if you use MacOX, I would recommend to use macports). Otherwise you might get errors during build.
+more details could be found here:
+http://lists.zeromq.org/pipermail/zeromq-dev/2010-February/002235.html
+
 
 First clone from GitHub:
 
