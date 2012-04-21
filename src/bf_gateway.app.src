@@ -23,6 +23,6 @@
 	 {productId, 82},
 	 {vendorSoftwareId, 0},
 	 {log4erl_config, "etc/log4erl.conf"},
-	 {webmachine_ip, "127.0.0.1"}
+	 {webmachine_ip, "192.168.1.67"}
   ]}
  ]}.
