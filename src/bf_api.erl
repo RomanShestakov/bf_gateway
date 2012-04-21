@@ -222,12 +222,12 @@ getAllEventTypes(GS_Wsdl, Token) ->
 %%--------------------------------------------------------------------
 -spec getAllMarkets(any(), string(), nil | [integer]) -> {ok, string(), binary()} | {getAllMarkets_error, any(), string()} |
 							 {getAllMarkets_unknown_error, any()} | {error, any()}.
-getAllMarkets(GX_Wsdl, Token, EventTypeId) -> 
+getAllMarkets(GX_Wsdl, Token, EventTypeIds) -> 
     %% set eventTypeId param 
     EventTypeParam = 
-	case EventTypeId == nil of
+	case EventTypeIds == nil of
 	    true -> nil;
-	    false -> #'P:ArrayOfInt'{'int' = EventTypeId}
+	    false -> #'P:ArrayOfInt'{'int' =  EventTypeIds}
 	end,
     %% the final soap request
     GetAllMarketsReq = #'P:GetAllMarketsReq'{'header' = #'P:APIRequestHeader'{sessionToken = Token, clientStamp = "0" },

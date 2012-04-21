@@ -11,7 +11,20 @@ to_html(ReqData, Context) ->
     Data = 
 	case list_to_atom(FuncName) of
 	    getActiveEventTypes -> bf_gateway:getActiveEventTypes();
-	    getAllMarkets -> bf_gateway:getAllMarkets();
+	    getAllMarkets ->
+		case wrq:get_qs_value("EventTypeIds", ReqData) of
+		    [] -> bf_gateway:getAllMarkets();
+		    QueryString -> 
+			%% the input might be in form http://rs.home:8000/bf_api/getAllMarkets?EventTypeIds=7,15
+			%% in this case parse ["7", "15"] to list of integers
+			io:format("~p~n", [QueryString]),
+			Tokens = string:tokens(QueryString, ","),
+			EventTypeIds = [list_to_integer(Token) || Token <- Tokens],
+			bf_gateway:getAllMarkets(EventTypeIds)
+		end;
+	    getMarket ->
+		MarketId = list_to_integer(wrq:get_qs_value("MarketId", ReqData)),
+		bf_gateway:getMarket(MarketId);
 	    Other -> {error, Other, not_defined}
 	end,
     {Data, ReqData, Context}.

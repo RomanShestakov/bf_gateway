@@ -81,14 +81,26 @@ keepAlive() ->
 getActiveEventTypes() ->
     gen_server:call({global, ?SERVER}, getActiveEventTypes).
 
+%%--------------------------------------------------------------------
+%% @doc
+%% service allows the customer to retrieve lists of all categories of sports (Games, Event Types) that have at least one market associated with them, regardless of whether that market is now closed for betting. This means that, for example, the service would always return the event types Soccer and Horse Racing and would also return Olympics 2004 or EURO 2004 for a certain period after the markets for those events had closed; it would also return Olympics 2004 or EURO 2004 for a certain period before the markets for those events had opened. The service returns information on future events to allow API programmers to see the range of events that will beavailable to bet on in the near future.
+%%
+%% @end
+%%--------------------------------------------------------------------
 getAllEventTypes() ->
     gen_server:call({global, ?SERVER}, getAllEventTypes).
 
+ 
+%%--------------------------------------------------------------------
+%% @doc
+%% service allows you to retrieve information about all of the markets that are currently active or suspended on the given exchange.You can use this service to quickly analyse the available markets on the exchange, or use the response to build a local copy of the Betfair.com navigation menu. You can limit the response to a particular time period, country where the event is taking place, and event type. Otherwise, the service returns all active and suspended markets.
+%% @end
+%%--------------------------------------------------------------------
 getAllMarkets() ->
     getAllMarkets(nil).
 
-getAllMarkets(MarketTypeId) ->
-    gen_server:call({global, ?SERVER}, {getAllMarkets, MarketTypeId}).
+getAllMarkets(EventTypeIds) ->
+    gen_server:call({global, ?SERVER}, {getAllMarkets, EventTypeIds}).
 
 getMarket(MarketId) ->
     gen_server:call({global, ?SERVER}, {getMarket, MarketId}).
@@ -219,8 +231,8 @@ handle_call(getAllEventTypes, _From, #state{gs_wsdl = GS_Wsdl, token = Token} = 
 	    log4erl:error("~p error in getAllEventTypes call ~p", [Other, Reason]),
 	    {reply, Reason, State#state{token = Token}}
     end;
-handle_call({getAllMarkets, MarketTypeId}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
-    case bf_api:getAllMarkets(GX_Wsdl, Token, MarketTypeId) of
+handle_call({getAllMarkets, EventTypeIds}, _From, #state{gx_wsdl = GX_Wsdl, token = Token} = State) ->
+    case bf_api:getAllMarkets(GX_Wsdl, Token, EventTypeIds) of
 	{ok, NewToken, MarketData} ->
 	    {reply, MarketData, State#state{token = NewToken}};
 	{getAllMarkets_error, {ErrCode, _MErrCode}, NToken} ->
