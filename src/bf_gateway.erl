@@ -68,6 +68,16 @@ logout() ->
 keepAlive() ->
     gen_server:call({global, ?SERVER}, keepalive).
 
+ 
+%%--------------------------------------------------------------------
+%% @doc
+%% allows the customer to retrieve lists of all categories of sporting events (Games, Event Types)
+%% that are available to bet on: in other words, all those that have at least one currently active
+%% or suspended market associated with them. This means, therefore, that the service would, for example,
+%% always return the event types Soccer and Horse Racing but would not return Olympics 2004 or EURO 2004 after those events had finished.
+%% @end
+%%--------------------------------------------------------------------
+%-spec
 getActiveEventTypes() ->
     gen_server:call({global, ?SERVER}, getActiveEventTypes).
 

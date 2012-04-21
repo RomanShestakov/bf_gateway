@@ -119,12 +119,13 @@ encode({marketInfo, #'P:MarketLite'{'marketStatus' = MarketStatus,
 	_:_ -> {bf_json_encode_error}
     end;
 
+%% getActiveEventTypes
 encode({event_type_items, EventTypeItems}) ->
     iolist_to_binary(
-      mochijson2:encode([{struct, [{'Id', Id},
-				   {'Name', list_to_binary(Name)},
-				   {'MarketId', MarketId},
-				   {'ExchangeId', ExchId}]} || #'P:EventType'{'id' = Id,
+      mochijson2:encode([{struct, [{'id', Id},
+				   {'name', list_to_binary(Name)},
+				   {'nextMarketId', MarketId},
+				   {'exchangeId', ExchId}]} || #'P:EventType'{'id' = Id,
 									      'name' = Name,
 									      'nextMarketId' = MarketId,
 									      'exchangeId' = ExchId} <- EventTypeItems]));
