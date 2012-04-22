@@ -25,6 +25,7 @@
 %% API
 -export([start_link/0]).
 
+%% betfair API exposed through REST API
 -export([login/2,
 	 logout/0,
 	 keepAlive/0,
@@ -38,6 +39,10 @@
 	 getMarketPricesCompressed/1,
 	 getMarketPricesCompressed/2
 	]).
+
+%% manage market subscriptions
+-export([subscribeToMarket/1,
+	 unsubscribeFromMarket/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -116,6 +121,13 @@ getMarketPricesCompressed(MarketId) ->
 
 getMarketPricesCompressed(MarketId, Format) ->
     gen_server:call({global, ?SERVER}, {getMarketPricesCompressed, MarketId, Format}).
+
+subscribeToMarket(MarketId) ->
+    gen_server:cast(?BF_PUBLISHER, {subscribeToMarket, MarketId}).
+
+unsubscribeFromMarket(MarketId) ->
+    gen_server:cast(?BF_PUBLISHER, {unsubscribeFromMarket, MarketId}).
+
     
 %%--------------------------------------------------------------------
 %% @doc
@@ -301,14 +313,6 @@ handle_call(_Request, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 
-handle_cast({subscribeMarket, MarketId}, State) ->
-    %% forward request to bf_publisher
-    gen_server:cast(?BF_PUBLISHER, {subscribeMarket, MarketId}),
-    {noreply, State};
-handle_cast({unsubscribeMarket, MarketId}, State) ->
-    %% forward request to bf_publisher
-    gen_server:cast(?BF_PUBLISHER, {unsubscribeMarket, MarketId}),  
-    {noreply, State};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 

@@ -1,11 +1,15 @@
 -module(bf_api_web).
 
--export([init/1, to_html/2, generate_etag/2]).
+-export([init/1, content_types_provided/2, to_json/2, generate_etag/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
 
 init([]) -> {ok, undefined}.
-to_html(ReqData, Context) -> 
+
+content_types_provided(ReqData, Context) ->
+    {[{"application/json", to_json}], ReqData, Context}.
+
+to_json(ReqData, Context) -> 
     PathInfo = wrq:path_info(ReqData),
     {ok, FuncName} = dict:find(func, PathInfo),
     Data = 
@@ -17,7 +21,6 @@ to_html(ReqData, Context) ->
 		    QueryString -> 
 			%% the input might be in form http://rs.home:8000/bf_api/getAllMarkets?EventTypeIds=7,15
 			%% in this case parse ["7", "15"] to list of integers
-			io:format("~p~n", [QueryString]),
 			Tokens = string:tokens(QueryString, ","),
 			EventTypeIds = [list_to_integer(Token) || Token <- Tokens],
 			bf_gateway:getAllMarkets(EventTypeIds)
