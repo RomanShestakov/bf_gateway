@@ -6,9 +6,9 @@
 	 process_post/2,
          %% resource_exists/2,
          %% last_modified/2,
-         content_types_provided/2
+         content_types_provided/2,
          %% content_types_accepted/2,
-         %% delete_resource/2,
+         delete_resource/2
          %% post_is_create/2,
          %% create_path/2,
          %% provide_content/2,
@@ -29,8 +29,6 @@ allowed_methods(ReqData, Context) ->
 content_types_provided(ReqData, Context) ->
     {[{"application/json", to_json}], ReqData, Context}.
 
-
-
 %% reply to post
 %% hit with 
 %% curl -X POST http://rs.home:8000/market/subscribe?MarketId=102940691
@@ -40,12 +38,22 @@ process_post(ReqData, Context) ->
     MarketId = list_to_integer(wrq:get_qs_value("MarketId", ReqData)),
     case list_to_atom(FuncName) of
 	subscribe ->
-	    bf_gateway:subscribeToMarket(MarketId);
-	unsubscribe ->
-	    bf_gateway:unsubscribeFromMarket(MarketId);
-	Other ->
-	    throw({error, unrecognized_request, Other})
-    end,
-    {true, ReqData, Context}.
+	    bf_gateway:subscribeToMarket(MarketId),
+	    {true, ReqData, Context};
+	_Other ->
+	    {false, ReqData, Context}
+    end.
 
-%% json_body(QS) -> mochijson:encode({struct, QS}).
+%% curl -X DELETE http://rs.home:8000/market/unsubscribe?MarketId=102873654
+delete_resource(ReqData, Context) ->
+    PathInfo = wrq:path_info(ReqData),
+    {ok, FuncName} = dict:find(func, PathInfo),
+    MarketId = list_to_integer(wrq:get_qs_value("MarketId", ReqData)),
+    case list_to_atom(FuncName) of
+	unsubscribe ->
+	    bf_gateway:unsubscribeFromMarket(MarketId),
+	    {true, ReqData, Context};
+	_Other ->
+	    {false, ReqData, Context}
+    end.
+
