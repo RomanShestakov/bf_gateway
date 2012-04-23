@@ -1,4 +1,4 @@
--module(bf_market_subscription).
+-module(bf_market_web).
 
 -export([init/1]).
 -export([
