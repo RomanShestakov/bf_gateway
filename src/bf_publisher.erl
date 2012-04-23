@@ -26,7 +26,7 @@
 -define(BETFAIR_API_HIT_TIMEOUT, 10000). %% 10sec for now to avoid throttling
 
 %% API
--export([start_link/0, publish_price/1]).
+-export([start_link/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -44,8 +44,8 @@
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-publish_price(Msg) ->
-    gen_server:cast(?SERVER, {publish, Msg}).
+%% publish_price(Msg) ->
+%%     gen_server:cast(?SERVER, {publish, Msg}).
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
@@ -86,16 +86,16 @@ handle_call(_Request, _From, State) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
 %%--------------------------------------------------------------------
-handle_cast({publish, Msg}, State) ->
-    %%log4erl:info("PUBLISHING ~p", [Msg]),
-    ok = erlzmq:send(State#state.publisher, Msg),
-    {noreply, State};
+%% handle_cast({publish, Msg}, State) ->
+%%     %%log4erl:info("PUBLISHING ~p", [Msg]),
+%%     ok = erlzmq:send(State#state.publisher, Msg),
+%%     {noreply, State};
 handle_cast({subscribeToMarket, MarketId}, State) ->
     case proplists:is_defined(MarketId, State#state.publishedMarketPids) of
 	false ->
 	    %% market is not being published, start publishing process.
 	    log4erl:info("start publishing prices for Market ~p", [MarketId]),
-	    Pid = spawn_link(fun() -> run_publisher(MarketId) end),
+	    Pid = spawn_link(fun() -> run_publisher(MarketId, State#state.publisher) end),
 	    {noreply, State#state{publishedMarketPids = [{MarketId, Pid} | State#state.publishedMarketPids]}};
 	true ->
 	    {noreply, State}
@@ -150,12 +150,12 @@ code_change(_OldVsn, State, _Extra) ->
 %% recursiverly call getMarketPricesCompressed for a given market and publish quotes to ZeroMQ
 %% @end
 %%--------------------------------------------------------------------
--spec run_publisher(integer()) -> no_return().
-run_publisher(MarketId) ->
+-spec run_publisher(integer(), any()) -> no_return().
+run_publisher(MarketId, Publisher) ->
     receive
 	cancel -> void
     after ?BETFAIR_API_HIT_TIMEOUT ->
 	    Quote = bf_gateway:getMarketPricesCompressed(MarketId),
-	    bf_publisher:publish_price(Quote),
-	    run_publisher(MarketId)
+	    erlzmq:send(Publisher, Quote),
+	    run_publisher(MarketId, Publisher)
     end.
