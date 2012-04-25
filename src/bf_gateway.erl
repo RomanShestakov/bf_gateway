@@ -42,7 +42,8 @@
 
 %% manage market subscriptions
 -export([subscribeToMarket/1,
-	 unsubscribeFromMarket/1]).
+	 unsubscribeFromMarket/1,
+	 getSubscribedMarkets/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -56,7 +57,6 @@
 
 -define(SERVER, ?MODULE). 
 -define(KEEP_ALIVE_TIMEOUT, 900000). %% 15min
--define(BF_PUBLISHER, bf_publisher).
 
 -record(state, {gs_wsdl, gx_wsdl, token, publishedMarketPids = [], publisher}).
 
@@ -123,12 +123,13 @@ getMarketPricesCompressed(MarketId, Format) ->
     gen_server:call({global, ?SERVER}, {getMarketPricesCompressed, MarketId, Format}).
 
 subscribeToMarket(MarketId) ->
-    gen_server:cast(?BF_PUBLISHER, {subscribeToMarket, MarketId}).
+    bf_publisher:subscribeToMarket(MarketId).
 
 unsubscribeFromMarket(MarketId) ->
-    gen_server:cast(?BF_PUBLISHER, {unsubscribeFromMarket, MarketId}).
+    bf_publisher:unsubscribeFromMarket(MarketId).
 
-    
+getSubscribedMarkets() ->
+    bf_publisher:getSubscribedMarkets().
 %%--------------------------------------------------------------------
 %% @doc
 %% Starts the server
@@ -138,7 +139,6 @@ unsubscribeFromMarket(MarketId) ->
 %%--------------------------------------------------------------------
 start_link() ->
     gen_server:start_link({global, ?SERVER}, ?MODULE, [], []).
-
 
 %%%===================================================================
 %%% gen_server callbacks

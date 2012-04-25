@@ -32,7 +32,20 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
+-export([subscribeToMarket/1, unsubscribeFromMarket/1, getSubscribedMarkets/0]).
+
 -record(state, {publishedMarketPids = [], context, publisher}).
+
+%-define(BF_PUBLISHER, bf_publisher).
+
+subscribeToMarket(MarketId) ->
+    gen_server:cast(?SERVER, {subscribeToMarket, MarketId}).
+
+unsubscribeFromMarket(MarketId) ->
+    gen_server:cast(?SERVER, {unsubscribeFromMarket, MarketId}).
+
+getSubscribedMarkets() ->
+    gen_server:call(?SERVER, getSubscribedMarkets).
 
 %%====================================================================
 %% API
@@ -76,6 +89,8 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
+handle_call(getSubscribedMarkets, _From, State) ->
+    {reply, State#state.publishedMarketPids, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
