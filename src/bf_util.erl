@@ -26,7 +26,8 @@
 	 get_password/0,
 	 get_GS_Wsdl/0,
 	 get_GX_Wsdl/0,
-	 get_webmachine_ip/0
+	 get_webmachine_ip/0,
+	 url_encode/1
 	]).
 
 %%--------------------------------------------------------------------
@@ -104,3 +105,17 @@ get_GX_Wsdl() ->
 	true -> File;
 	false -> throw({file_not_exist, File})
     end.
+
+%% @doc A function to URL encode form data.
+%% @spec url_encode(formdata()).
+%% http:request(post, {"http://localhost:3000/foo", [], 
+%                        "application/x-www-form-urlencoded",
+%                        url_encode([{"username", "bob"}, {"password", "123456"}])}
+%                 ,[],[]).
+%-spec(url_encode(formdata()) -> string()).
+url_encode(Data) -> url_encode(Data, "").
+url_encode([],Acc) -> Acc;
+url_encode([{Key,Value} | R], "") ->
+    url_encode(R, edoc_lib:escape_uri(Key) ++ "=" ++ edoc_lib:escape_uri(Value));
+url_encode([{Key,Value}|R],Acc) ->
+    url_encode(R, Acc ++ "&" ++ edoc_lib:escape_uri(Key) ++ "=" ++ edoc_lib:escape_uri(Value)).
