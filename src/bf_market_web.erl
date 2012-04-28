@@ -40,7 +40,7 @@ content_types_accepted(ReqData, Context) ->
 
 resource_exists(ReqData, Context) ->
     case wrq:path(ReqData) of
-	"/markets" -> {true, ReqData, Context};
+	"/markets" -> {true, ReqData, {show_all_markets}};
 	_Other ->
 	    case wrq:path_info(marketId, ReqData) of
 		undefined -> {false, ReqData, Context};
@@ -48,8 +48,8 @@ resource_exists(ReqData, Context) ->
 		    try
 			MarketId = list_to_integer(Other1),
 			case proplists:is_defined(MarketId, bf_gateway:getSubscribedMarkets()) of
-			    true -> {true, ReqData, MarketId};
-			    false -> {false, ReqData, MarketId}
+			    true -> {true, ReqData, {marketId, MarketId}};
+			    false -> {false, ReqData, {marketId, MarketId}}
 			end
 		    catch
 			_:_ -> {false, ReqData, Context}
@@ -57,11 +57,14 @@ resource_exists(ReqData, Context) ->
 	    end
     end.
 
-
-to_text(ReqData, Context) ->
+to_text(ReqData, {show_all_markets}) ->
     Markets = bf_gateway:getSubscribedMarkets(),
     Body = io_lib:format("~p.~n", [Markets]),
-    {Body, ReqData, Context}.
+    {Body, ReqData, {}};
+to_text(ReqData, {marketId, _MarketId}) ->
+    %%Markets = bf_gateway:getSubscribedMarkets(),
+    Body = io_lib:format("~p.~n", ["dddd"]),
+    {Body, ReqData, {}}.
 
 %% to_json(ReqData, Result) -> 
 %%     {mochijson:encode(Result), ReqData, Result}.
@@ -75,12 +78,12 @@ to_text(ReqData, Context) ->
 %%     bf_gateway:subscribeToMarket(MarketId),
 %%     {true, ReqData, {}}.
 %% curl -X PUT -H "Content-type: application/x-www-form-urlencoded" http://rs.home:8000/market/104432877
-accept_form(ReqData, MarketId) ->
+accept_form(ReqData, {marketId, MarketId}) ->
     bf_gateway:subscribeToMarket(MarketId),
     {true, ReqData, MarketId}.
 
 %% curl -X DELETE http://rs.home:8000/market/unsubscribe?MarketId=102873654
 %% curl -X PUT -H "Content-type: application/x-www-form-urlencoded" http://rs.home:8000/market/104432877
-delete_resource(ReqData, MarketId) ->
+delete_resource(ReqData, {marketId, MarketId}) ->
     bf_gateway:unsubscribeFromMarket(MarketId),
     {true, ReqData, MarketId}.
